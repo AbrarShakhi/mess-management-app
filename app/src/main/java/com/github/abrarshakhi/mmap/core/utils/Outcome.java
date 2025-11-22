@@ -1,4 +1,4 @@
-package com.github.abrarshakhi.mmap.utils.helpers;
+package com.github.abrarshakhi.mmap.core.utils;
 
 
 import androidx.annotation.NonNull;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Contract;
  * <p>Usage example:</p>
  *
  * <pre>
- * Result&lt;Integer, String&gt; parsed = parseInt("10");
+ * Outcome&lt;Integer, String&gt; parsed = parseInt("10");
  * if (parsed.isOK()) {
  *     System.out.println(parsed.unwrap());     // Success
  * } else {
@@ -27,9 +27,9 @@ import org.jetbrains.annotations.Contract;
  * @param <V> The success value type.
  * @param <E> The error value type.
  */
-public interface Result<V, E> {
+public interface Outcome<V, E> {
     /**
-     * Creates a successful {@link Ok} result containing the given value.
+     * Creates a successful {@link Ok} outcome containing the given value.
      *
      * @param value The value representing a successful result (may be null).
      * @param <V>   The success value type.
@@ -38,7 +38,7 @@ public interface Result<V, E> {
      */
     @NonNull
     @Contract(value = "_ -> new", pure = true)
-    static <V, E> Result<V, E> ok(V value) {
+    static <V, E> Outcome<V, E> ok(V value) {
         return new Ok<>(value);
     }
 
@@ -52,7 +52,7 @@ public interface Result<V, E> {
      */
     @NonNull
     @Contract(value = "_ -> new", pure = true)
-    static <V, E> Result<V, E> err(E error) {
+    static <V, E> Outcome<V, E> err(E error) {
         return new Err<>(error);
     }
 
@@ -66,7 +66,7 @@ public interface Result<V, E> {
      */
     @NonNull
     @Contract(value = "_ -> new", pure = true)
-    static <V, E> Result<V, E> success(V value) {
+    static <V, E> Outcome<V, E> success(V value) {
         return new Ok<>(value);
     }
 
@@ -80,7 +80,7 @@ public interface Result<V, E> {
      */
     @NonNull
     @Contract(value = "_ -> new", pure = true)
-    static <V, E> Result<V, E> failure(E error) {
+    static <V, E> Outcome<V, E> failure(E error) {
         return new Err<>(error);
     }
 
@@ -144,7 +144,7 @@ public interface Result<V, E> {
      * @param <V> Success value type
      * @param <E> Error value type
      */
-    class Err<V, E> implements Result<V, E> {
+    class Err<V, E> implements Outcome<V, E> {
         private final E error;
 
         public Err(E error) {
@@ -194,7 +194,7 @@ public interface Result<V, E> {
      * @param <V> Success value type
      * @param <E> Error value type
      */
-    class Ok<V, E> implements Result<V, E> {
+    class Ok<V, E> implements Outcome<V, E> {
         private final V value;
 
         public Ok(V value) {
