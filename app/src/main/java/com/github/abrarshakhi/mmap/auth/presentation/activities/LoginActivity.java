@@ -1,6 +1,8 @@
 package com.github.abrarshakhi.mmap.auth.presentation.activities;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -20,11 +22,24 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
+    TextInputEditText emailEt;
+    TextInputEditText passEt;
+    MaterialButton loginBtn;
+    TextView errorStatus, goToSignUp, forgotPassword;
     private LoginViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initLayout();
+        initViews();
+        initViewModel();
+        initListener();
+        initObserver();
+    }
+
+
+    private void initLayout() {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login),
@@ -33,27 +48,47 @@ public class LoginActivity extends AppCompatActivity {
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
                 return insets;
             });
+    }
 
-        TextInputEditText emailEt = findViewById(R.id.editEmail);
-        TextInputEditText passEt = findViewById(R.id.editPassword);
-        MaterialButton loginBtn = findViewById(R.id.btnLogin);
+    private void initViews() {
+        emailEt = findViewById(R.id.editEmail);
+        passEt = findViewById(R.id.editPassword);
+        loginBtn = findViewById(R.id.btnLogin);
+        errorStatus = findViewById(R.id.etErrorStatus);
+        goToSignUp = findViewById(R.id.tvGoToSignUp);
+        forgotPassword = findViewById(R.id.tvForgotPassword);
+    }
 
+    private void initViewModel() {
         LoginRepository repo = new AuthRepositoryImpl();
         LoginUseCase loginUseCase = new LoginUseCase(repo);
-
         viewModel = new LoginViewModel(loginUseCase);
+    }
 
+    private void initListener() {
         loginBtn.setOnClickListener(v -> {
-            String email = Objects.requireNonNull(emailEt.getText()).toString();
-            String pass = Objects.requireNonNull(passEt.getText()).toString();
+            String email = Objects.requireNonNull(emailEt.getText()).toString().trim();
+            String pass = Objects.requireNonNull(passEt.getText()).toString().trim();
             viewModel.login(email, pass);
         });
-
-        viewModel.loginResult.observe(this, result -> {
-            Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
-            if (result.isSuccess()) {
-
-            }
+        goToSignUp.setOnClickListener(v -> {
+            // TODO: Navigate to signup page
         });
+        forgotPassword.setOnClickListener(v -> {
+            // TODO: Navigate to forget password page
+        });
+    }
+
+    private void initObserver() {
+        viewModel.loginResult.observe(
+            this, result -> {
+                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+                if (result.isSuccess()) {
+                    errorStatus.setVisibility(View.GONE);
+                    // TODO: Navigate to main page
+                } else {
+                    errorStatus.setVisibility(View.VISIBLE);
+                }
+            });
     }
 }
