@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/login"
     android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="#F5F7FB"
-    android:layout_height="match_parent"
     tools:ignore="HardcodedText"
     tools:context=".auth.presentation.activities.LoginActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:padding="24dp"
+        android:gravity="center"
         android:orientation="vertical">
 
         <!-- App Logo -->
@@ -47,91 +46,99 @@
             android:textColor="#757575"
             android:textSize="14sp" />
 
-        <!-- Card for Form -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- Form Card Replacement -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:padding="24dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="8dp"
-            android:backgroundTint="#FFFFFF">
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:elevation="8dp"
+            android:clipToPadding="false"
+            android:layout_margin="4dp">
 
+            <!-- Error Text -->
+            <TextView
+                android:id="@+id/etErrorStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Invalid email or password"
+                android:textColor="#f00"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <!-- Email -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_margin="10dp">
 
-                <TextView
-                    android:id="@+id/etErrorStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Invalid email io password"
-                    android:gravity="start"
-                    android:textColor="#f00"
-                    android:textSize="14sp"
-                    android:visibility="gone"/>
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Email logo"
+                    android:src="@drawable/ic_email"
+                    android:layout_marginRight="10dp"/>
 
-                <!-- Email -->
-                <com.google.android.material.textfield.TextInputLayout
+                <EditText
+                    android:id="@+id/editEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="      Email"
-                    android:layout_margin="10dp"
-                    app:startIconDrawable="@drawable/ic_email">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editEmail"
-                        android:inputType="textEmailAddress"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Password -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:hint="      Password"
-                    app:passwordToggleEnabled="true"
-                    app:startIconDrawable="@drawable/ic_lock">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editPassword"
-                        android:inputType="textPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Forgot Password -->
-                <TextView
-                    android:id="@+id/tvForgotPassword"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_margin="10dp"
-                    android:text="Forgot Password?"
-                    android:textColor="#2962FF"
-                    android:textStyle="bold"
-                    android:textSize="14sp"/>
-
-                <!-- Login Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnLogin"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:text="Login"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    app:cornerRadius="14dp"
-                    android:padding="12dp"
-                    android:backgroundTint="#2962FF" />
-
+                    android:hint="Email"
+                    android:inputType="textEmailAddress"/>
             </LinearLayout>
 
-        </com.google.android.material.card.MaterialCardView>
+            <!-- Password -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_margin="10dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Block logo"
+                    android:src="@drawable/ic_lock"
+                    android:layout_marginRight="10dp"/>
+
+                <EditText
+                    android:id="@+id/editPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Password"
+                    android:inputType="textPassword"/>
+            </LinearLayout>
+
+            <!-- Forgot Password -->
+            <TextView
+                android:id="@+id/tvForgotPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_margin="10dp"
+                android:text="Forgot Password?"
+                android:textColor="#2962FF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <!-- Login Button -->
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="Login"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:background="#2962FF"
+                android:padding="12dp" />
+
+        </LinearLayout>
 
         <!-- Sign Up Row -->
         <LinearLayout
@@ -145,7 +152,7 @@
                 android:layout_height="wrap_content"
                 android:text="Don't have an account?"
                 android:textColor="#757575"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tvGoToSignUp"
@@ -160,4 +167,4 @@
 
     </LinearLayout>
 
-</androidx.core.widget.NestedScrollView>
+</ScrollView>
