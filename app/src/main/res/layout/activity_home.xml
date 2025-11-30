@@ -8,6 +8,16 @@
     android:orientation="vertical"
     tools:context=".home.presentation.activities.HomeActivity">
 
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:backgroundTint="?attr/colorPrimary"
+        android:title="Home"
+        app:titleCentered="true"
+        android:titleTextColor="@color/white"
+        tools:ignore="HardcodedText" />
+
     <FrameLayout
         android:id="@+id/flMainFrameLayout"
         android:layout_width="match_parent"

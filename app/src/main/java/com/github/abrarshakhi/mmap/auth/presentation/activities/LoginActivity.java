@@ -35,11 +35,12 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         initLayout();
         initViews();
+        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+        finishAffinity();
         initViewModel();
         initListener();
         initObserver();
     }
-
 
     private void initLayout() {
         EdgeToEdge.enable(this);
