@@ -1,8 +1,8 @@
 package com.github.abrarshakhi.mmap.auth.domain.model;
 
 public class LoginResult {
-    private boolean success;
-    private String message;
+    private final boolean success;
+    private final String message;
 
     public LoginResult(boolean success, String message) {
         this.success = success;

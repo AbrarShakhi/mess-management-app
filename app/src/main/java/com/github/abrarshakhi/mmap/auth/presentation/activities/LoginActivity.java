@@ -15,10 +15,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
+import com.github.abrarshakhi.mmap.auth.data.remote.api.AuthApiService;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
+import com.github.abrarshakhi.mmap.core.connection.NetworkModule;
 import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
 
 import java.util.Objects;
@@ -35,8 +37,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         initLayout();
         initViews();
-        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-        finishAffinity();
         initViewModel();
         initListener();
         initObserver();
@@ -62,7 +62,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initViewModel() {
-        LoginRepository repo = new AuthRepositoryImpl();
+        AuthApiService api = NetworkModule.getInstance().provideAuthApiService();
+        LoginRepository repo = new AuthRepositoryImpl(api);
         LoginUseCase loginUseCase = new LoginUseCase(repo);
         viewModel = new LoginViewModel(loginUseCase);
     }

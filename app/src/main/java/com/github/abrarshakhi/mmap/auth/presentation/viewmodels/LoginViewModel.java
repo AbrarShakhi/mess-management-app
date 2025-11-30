@@ -7,19 +7,30 @@ import com.github.abrarshakhi.mmap.auth.domain.model.LoginRequest;
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class LoginViewModel extends ViewModel {
-
+    private final ExecutorService executor;
     private final LoginUseCase loginUseCase;
-
     public MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
 
     public LoginViewModel(LoginUseCase loginUseCase) {
         this.loginUseCase = loginUseCase;
+        executor = Executors.newSingleThreadExecutor();
     }
 
     public void login(String email, String password) {
-        LoginRequest request = new LoginRequest(email, password);
-        LoginResult result = loginUseCase.execute(request);
-        loginResult.setValue(result);
+        executor.execute(() -> {
+            LoginRequest request = new LoginRequest(email, password);
+            LoginResult result = loginUseCase.execute(request);
+            loginResult.postValue(result);
+        });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }
