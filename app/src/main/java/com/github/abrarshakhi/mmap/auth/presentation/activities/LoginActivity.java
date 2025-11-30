@@ -1,7 +1,10 @@
 package com.github.abrarshakhi.mmap.auth.presentation.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,15 +19,14 @@ import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
+import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
 
 import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
-    TextInputEditText emailEt;
-    TextInputEditText passEt;
-    MaterialButton loginBtn;
+    EditText emailEt;
+    EditText passEt;
+    Button loginBtn;
     TextView errorStatus, goToSignUp, forgotPassword;
     private LoginViewModel viewModel;
 
@@ -42,12 +44,11 @@ public class LoginActivity extends AppCompatActivity {
     private void initLayout() {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login),
-            (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
     }
 
     private void initViews() {
@@ -80,15 +81,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initObserver() {
-        viewModel.loginResult.observe(
-            this, result -> {
-                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
-                if (result.isSuccess()) {
-                    errorStatus.setVisibility(View.GONE);
-                    // TODO: Navigate to main page
-                } else {
-                    errorStatus.setVisibility(View.VISIBLE);
-                }
-            });
+        viewModel.loginResult.observe(this, result -> {
+            Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+            if (result.isSuccess()) {
+                errorStatus.setVisibility(View.GONE);
+                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                finishAffinity();
+            } else {
+                errorStatus.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }

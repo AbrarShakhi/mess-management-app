@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MessManagementApp">
         <activity
+            android:name=".home.presentation.activities.HomeActivity"
+            android:exported="false" />
+        <activity
             android:name=".auth.presentation.activities.ForgetPasswordActivity"
             android:exported="false" />
         <activity

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+    <item
+        android:id="@+id/bniHome"
+        android:icon="@drawable/ic_home"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/bniMeals"
+        android:icon="@drawable/ic_food"
+        android:title="Meals" />
+
+    <item
+        android:id="@+id/bniGrocery"
+        android:icon="@drawable/ic_shopping"
+        android:title="Grocery" />
+
+    <item
+        android:id="@+id/bniManagement"
+        android:icon="@drawable/ic_admin"
+        android:title="Management" />
+
+    <item
+        android:id="@+id/bniProfile"
+        android:icon="@drawable/ic_person"
+        android:title="Profile" />
+
+</menu>
