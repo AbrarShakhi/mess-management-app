@@ -1,6 +1,12 @@
+import java.util.Properties;
+
 plugins {
     alias(libs.plugins.android.application)
 }
+
+val localProps = Properties()
+localProps.load(rootProject.file("local.properties").inputStream())
+val supabaseAnonKey: String = localProps.getProperty("SUPABASE_ANON_KEY")
 
 android {
     namespace = "com.github.abrarshakhi.mmap"
@@ -10,6 +16,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     defaultConfig {
@@ -20,6 +27,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "SUPABASE_ANON_KEY",
+            "\"$supabaseAnonKey\""
+        )
     }
 
     buildTypes {
@@ -49,17 +62,17 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     // room
-    val roomVersion = "2.8.4"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    testImplementation("androidx.room:room-testing:$roomVersion")
+    implementation("androidx.room:room-runtime:2.8.4")
+    annotationProcessor("androidx.room:room-compiler:2.8.4")
+    testImplementation("androidx.room:room-testing:2.8.4")
 
     // retrofit
-    val retrofitVersion = "3.0.0"
-    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
-    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
     // OkHttp
-    val okHttpVersion = "4.9.3"
-    implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+    // crypto
+    implementation("androidx.security:security-crypto:1.1.0-alpha03")
 }

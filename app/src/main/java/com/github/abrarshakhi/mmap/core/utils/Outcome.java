@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Contract;
 
+import java.util.concurrent.Callable;
+
 
 /**
  * A lightweight, functional-style container that represents either a successful value ({@link Ok})
@@ -54,6 +56,23 @@ public interface Outcome<V, E> {
     @Contract(value = "_ -> new", pure = true)
     static <V, E> Outcome<V, E> err(E error) {
         return new Err<>(error);
+    }
+
+    /**
+     * Takes a callable function. if that function throws exception returns {@link #err(Object)}, otherwise returns {@link #ok(Object)}
+     * @param callable a callable function
+     * @return A new {@link Outcome} class
+     * @param <V> The success value type.
+     */
+    @NonNull
+    @Contract(value = "_ -> new", pure = true)
+    static <V, E> Outcome<V, E> make(Callable<V> callable) {
+        try {
+            V value = callable.call();
+            return new Ok<>(value);
+        } catch (Throwable e) {
+            return new Err<>((E) e);
+        }
     }
 
     /**

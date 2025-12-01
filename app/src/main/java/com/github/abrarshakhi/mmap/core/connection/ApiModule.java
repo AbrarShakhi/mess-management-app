@@ -7,19 +7,22 @@ import org.jetbrains.annotations.NotNull;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class NetworkModule {
-    private static NetworkModule instance;
+public class ApiModule {
+    private static ApiModule instance;
     private final Retrofit retrofit;
 
-    private NetworkModule(@NotNull Retrofit retrofit) {
+    private ApiModule(@NotNull Retrofit retrofit) {
         this.retrofit = retrofit;
     }
 
-    public static synchronized NetworkModule getInstance() {
+    public static synchronized ApiModule getInstance() {
         if (instance == null) {
-            String BASE_URL = "https://ojtzllkeupdxdewqedcs.supabase.co";
-            Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
-            instance = new NetworkModule(retrofit);
+            String BASE_URL = "https://ojtzllkeupdxdewqedcs.supabase.co/";
+            Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+            instance = new ApiModule(retrofit);
         }
         return instance;
     }
