@@ -1,6 +1,5 @@
 package com.github.abrarshakhi.mmap.auth.presentation.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -18,25 +17,37 @@ import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.local.storage.AuthStorage;
 import com.github.abrarshakhi.mmap.auth.data.remote.api.AuthApiService;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
+import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
+import com.github.abrarshakhi.mmap.auth.presentation.navigations.LoginNavigation;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
 import com.github.abrarshakhi.mmap.core.connection.ApiModule;
 import com.github.abrarshakhi.mmap.core.utils.Outcome;
-import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
-
-import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
-    EditText emailEt;
-    EditText passEt;
-    Button loginBtn;
-    TextView errorStatus, goToSignUp, forgotPassword;
+    private EditText emailEt;
+    private EditText passEt;
+    private Button loginBtn;
+    private TextView errorStatus, goToSignUp, forgotPassword;
     private LoginViewModel viewModel;
+    private LoginNavigation navigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AuthApiService api = ApiModule.getInstance().provideAuthApiService();
+        Outcome<AuthStorage, Throwable> localStorage = AuthStorage.getInstance(this);
+        LoginRepository repo = new AuthRepositoryImpl(api, localStorage.unwrapOr(null));
+        LoginUseCase loginUseCase = new LoginUseCase(repo);
+        CheckLoginUseCase checkLoginUseCase = new CheckLoginUseCase(repo);
+        viewModel = new LoginViewModel(loginUseCase, checkLoginUseCase);
+
+        viewModel.isLoggedIn();
+        navigation = new LoginNavigation(this);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
@@ -52,31 +63,32 @@ public class LoginActivity extends AppCompatActivity {
         goToSignUp = findViewById(R.id.tvGoToSignUp);
         forgotPassword = findViewById(R.id.tvForgotPassword);
 
-        AuthApiService api = ApiModule.getInstance().provideAuthApiService();
-        Outcome<AuthStorage, Throwable> localStorage = AuthStorage.getInstance(this);
-        LoginRepository repo = new AuthRepositoryImpl(api, localStorage.unwrapOr(null));
-        LoginUseCase loginUseCase = new LoginUseCase(repo);
-        viewModel = new LoginViewModel(loginUseCase);
-
         loginBtn.setOnClickListener(v -> {
-            String email = Objects.requireNonNull(emailEt.getText()).toString().trim();
-            String pass = Objects.requireNonNull(passEt.getText()).toString().trim();
-            viewModel.login(email, pass);
+            loginBtn.setEnabled(false);
+            viewModel.login(
+                    emailEt.getText().toString(),
+                    passEt.getText().toString()
+            );
         });
         goToSignUp.setOnClickListener(v -> {
-            // TODO: Navigate to signup page
+            navigation.toSignupActivity();
+            finishAffinity();
         });
         forgotPassword.setOnClickListener(v -> {
-            // TODO: Navigate to forget password page
+            navigation.toForgetPasswordActivity();
+            finishAffinity();
         });
 
         viewModel.loginResult.observe(this, result -> {
-            Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+            loginBtn.setEnabled(true);
             if (result.isSuccess()) {
                 errorStatus.setVisibility(View.GONE);
-                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                navigation.toHomeActivity();
                 finishAffinity();
-            } else {
+            } else if (result.getCode() == LoginResult.CODE.LOGGED_IN) {
+                navigation.toHomeActivity();
+                finishAffinity();
+            } else if (result.getCode() == LoginResult.CODE.INVALID) {
                 errorStatus.setVisibility(View.VISIBLE);
             }
         });

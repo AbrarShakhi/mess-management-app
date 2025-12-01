@@ -24,15 +24,15 @@ public class AuthStorage extends LocalPreferences {
         if (instance == null) {
             Outcome<SharedPreferences, Throwable> outcome = Outcome.make(() -> {
                 MasterKey masterKey = new MasterKey.Builder(context)
-                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                    .build();
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build();
 
                 return EncryptedSharedPreferences.create(
-                    context,
-                    FILE_NAME,
-                    masterKey,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                        context,
+                        FILE_NAME,
+                        masterKey,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
                 );
             });
             if (outcome.hasErr()) {
@@ -47,5 +47,18 @@ public class AuthStorage extends LocalPreferences {
         saveString(LoginTokenDto.accessTokenKey, token.getAccessToken());
         saveString(LoginTokenDto.refreshTokenKey, token.getRefreshToken());
         saveLong(LoginTokenDto.expiresAtKey, token.getExpiresAt());
+    }
+
+    public Outcome<LoginTokenDto, NullPointerException> loadToken() {
+        if (!contains(LoginTokenDto.accessTokenKey)
+                || !contains(LoginTokenDto.refreshTokenKey)
+                || !contains(LoginTokenDto.expiresAtKey)) {
+            return Outcome.err(new NullPointerException());
+        }
+        return Outcome.ok(new LoginTokenDto(
+                getString(LoginTokenDto.accessTokenKey),
+                getString(LoginTokenDto.refreshTokenKey),
+                getLong(LoginTokenDto.expiresAtKey)
+        ));
     }
 }

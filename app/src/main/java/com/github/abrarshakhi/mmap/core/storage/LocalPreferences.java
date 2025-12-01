@@ -22,6 +22,10 @@ public abstract class LocalPreferences {
         return sp.getString(key, null);
     }
 
+    protected boolean contains(String key) {
+        return sp.contains(key);
+    }
+
     protected Long getLong(String key) {
         return sp.getLong(key, 0);
     }

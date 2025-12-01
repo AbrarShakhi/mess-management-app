@@ -21,6 +21,12 @@ public class LoginTokenDto {
         this.expiresAt = data.expiresAt;
     }
 
+    public LoginTokenDto(String accessToken, String refreshToken, Long expiresAt) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.expiresAt = expiresAt;
+    }
+
     public String getAccessToken() {
         return accessToken;
     }

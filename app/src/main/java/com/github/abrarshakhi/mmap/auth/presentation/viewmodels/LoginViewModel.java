@@ -5,19 +5,30 @@ import androidx.lifecycle.ViewModel;
 
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginRequest;
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class LoginViewModel extends ViewModel {
-    private final ExecutorService executor;
     private final LoginUseCase loginUseCase;
+    private final CheckLoginUseCase checkLoginUseCase;
+
+    private final ExecutorService executor;
     public MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
 
-    public LoginViewModel(LoginUseCase loginUseCase) {
+    public LoginViewModel(LoginUseCase loginUseCase, CheckLoginUseCase checkLoginUseCase) {
         this.loginUseCase = loginUseCase;
-        executor = Executors.newSingleThreadExecutor();
+        this.checkLoginUseCase = checkLoginUseCase;
+        executor = Executors.newFixedThreadPool(2);
+    }
+
+    public void isLoggedIn() {
+        executor.execute(() -> {
+            LoginResult result = checkLoginUseCase.execute();
+            loginResult.postValue(result);
+        });
     }
 
     public void login(String email, String password) {

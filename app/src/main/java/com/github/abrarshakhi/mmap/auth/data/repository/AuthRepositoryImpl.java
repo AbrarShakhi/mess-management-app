@@ -1,5 +1,7 @@
 package com.github.abrarshakhi.mmap.auth.data.repository;
 
+import androidx.annotation.NonNull;
+
 import com.github.abrarshakhi.mmap.BuildConfig;
 import com.github.abrarshakhi.mmap.auth.data.local.dto.LoginTokenDto;
 import com.github.abrarshakhi.mmap.auth.data.local.storage.AuthStorage;
@@ -20,8 +22,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-import okhttp3.ResponseBody;
-import retrofit2.Call;
 import retrofit2.Response;
 
 
@@ -36,36 +36,47 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
 
     @Override
     public LoginResult login(@NotNull LoginRequest request) {
-        Call<LoginResponseDto> call = api.login(
-            BuildConfig.SUPABASE_ANON_KEY,
-            new LoginRequestDto(request.getEmail(), request.getPassword())
+        var call = api.login(
+                BuildConfig.SUPABASE_ANON_KEY,
+                new LoginRequestDto(request.getEmail(), request.getPassword())
         );
         Outcome<Response<LoginResponseDto>, IOException> outcome = Outcome.make(call::execute);
         if (outcome.hasErr()) {
-            return new LoginResult(-1, "Network Error");
+            return new LoginResult(LoginResult.CODE.NET_ERROR, "Network Error");
         }
-        Response<LoginResponseDto> response = outcome.unwrap();
+        var response = outcome.unwrap();
         if (response.isSuccessful() && response.body() != null) {
-            LoginTokenDto token = new LoginTokenDto(response.body());
+            var token = new LoginTokenDto(response.body());
             authStorage.saveToken(token);
-            return new LoginResult(response.code(), "Login successfully");
+            return new LoginResult(LoginResult.CODE.SUCCESS, "Login successfully");
         }
-        ResponseBody errBody = response.errorBody();
+        var errBody = response.errorBody();
         if (errBody == null) {
-            return new LoginResult(response.code(), "Network Error");
+            return new LoginResult(LoginResult.CODE.INVALID, "Network Error");
         }
         Outcome<LoginErrorResponseDto, IOException> errorOutcome = Outcome.make(() -> new Gson()
-            .fromJson(errBody.string(), LoginErrorResponseDto.class));
+                .fromJson(errBody.string(), LoginErrorResponseDto.class));
         errBody.close();
         if (errorOutcome.isOK()) {
-            return new LoginResult(response.code(), errorOutcome.unwrap().msg);
+            return new LoginResult(LoginResult.CODE.INVALID, errorOutcome.unwrap().msg);
         } else {
-            return new LoginResult(response.code(), "Something Went Wrong");
+            return new LoginResult(LoginResult.CODE.INVALID, "Something Went Wrong");
         }
     }
 
     @Override
-    public SignupResult signup(SignupRequest request) {
+    public LoginResult isLoggedIn() {
+        var outcome = authStorage.loadToken();
+        if (outcome.hasErr()) {
+            return new LoginResult(LoginResult.CODE.LOGGED_OUT, "Token does not exists.");
+        }
+        LoginTokenDto tokenDto = outcome.unwrap();
+        // TODO:
+        return new LoginResult(LoginResult.CODE.SUCCESS, "Login successfully");
+    }
+
+    @Override
+    public SignupResult signup(@NonNull SignupRequest request) {
         if (request.getEmail().equals("test@example.com")) {
             return new SignupResult(false, "Email already taken");
         }
