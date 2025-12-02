@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +18,6 @@ import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.local.storage.AuthStorage;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
-import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.LoginNavigation;
@@ -52,16 +52,13 @@ public class LoginActivity extends AppCompatActivity {
         goToSignUp = findViewById(R.id.tvGoToSignUp);
         forgotPassword = findViewById(R.id.tvForgotPassword);
 
-        loginLayout.setVisibility(View.GONE);
+        var api = ApiModule.getInstance().provideAuthApiService();
+        var local = AuthStorage.getInstance(this).unwrapOr(null);
+        var repo = new AuthRepositoryImpl(api, local);
 
-        LoginRepository repo = new AuthRepositoryImpl(
-            ApiModule.getInstance().provideAuthApiService(),
-            AuthStorage.getInstance(this).unwrapOr(null)
-        );
-        viewModel = new LoginViewModel(
-            new LoginUseCase(repo),
-            new CheckLoginUseCase(repo)
-        );
+        var loginUseCase = new LoginUseCase(repo);
+        var checkIsLoggedIn = new CheckLoginUseCase(repo);
+        viewModel = new LoginViewModel(loginUseCase, checkIsLoggedIn);
 
         viewModel.isLoggedIn();
         navigation = new LoginNavigation(this);
@@ -69,8 +66,8 @@ public class LoginActivity extends AppCompatActivity {
         loginBtn.setOnClickListener(v -> {
             loginBtn.setEnabled(false);
             viewModel.login(
-                emailEt.getText().toString(),
-                passEt.getText().toString()
+                    emailEt.getText().toString(),
+                    passEt.getText().toString()
             );
         });
         goToSignUp.setOnClickListener(v -> {
@@ -83,17 +80,19 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         viewModel.loginResult.observe(this, result -> {
-            loginLayout.setVisibility(View.VISIBLE);
-            loginBtn.setEnabled(true);
-            if (result.isSuccess()) {
+            if (result.isSuccess()
+                    || result.getCode() == LoginResult.CODE.OFFLINE_EXPIRED) {
                 errorStatus.setVisibility(View.GONE);
                 navigation.toHomeActivity();
                 finishAffinity();
-            } else if (result.getCode() == LoginResult.CODE.LOGGED_IN) {
-                navigation.toHomeActivity();
-                finishAffinity();
-            } else if (result.getCode() == LoginResult.CODE.INVALID) {
+            } else if (result.getCode() == LoginResult.CODE.INVALID_LOGIN_INFO) {
                 errorStatus.setVisibility(View.VISIBLE);
+            } else if (result.getCode() != LoginResult.CODE.LOGGED_OUT) {
+                Toast.makeText(LoginActivity.this, result.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+            loginBtn.setEnabled(true);
+            if (loginLayout.getVisibility() != View.VISIBLE) {
+                loginLayout.setVisibility(View.VISIBLE);
             }
         });
     }

@@ -14,7 +14,7 @@ public class LoginResult {
     }
 
     public boolean isSuccess() {
-        return code == CODE.SUCCESS;
+        return code == CODE.SUCCESSFUL_LOGIN || code == CODE.SUCCESSFUL_LOGGED_IN;
     }
 
     public String getMessage() {
@@ -22,6 +22,11 @@ public class LoginResult {
     }
 
     public enum CODE {
-        SUCCESS, NET_ERROR, INVALID, LOGGED_IN, LOGGED_OUT
+        SUCCESSFUL_LOGIN,
+        SUCCESSFUL_LOGGED_IN,
+        INVALID_LOGIN_INFO,
+        OFFLINE_EXPIRED,
+        UNSUCCESSFUL,
+        LOGGED_OUT,
     }
 }

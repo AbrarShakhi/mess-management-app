@@ -47,18 +47,24 @@ public class AuthStorage extends LocalPreferences {
         saveString(LoginTokenDto.accessTokenKey, token.getAccessToken());
         saveString(LoginTokenDto.refreshTokenKey, token.getRefreshToken());
         saveLong(LoginTokenDto.expiresAtKey, token.getExpiresAt());
+        saveString(LoginTokenDto.emailKey, token.getEmail());
+        saveString(LoginTokenDto.idKey, token.getUserId());
     }
 
     public Outcome<LoginTokenDto, NullPointerException> loadToken() {
         if (!contains(LoginTokenDto.accessTokenKey)
                 || !contains(LoginTokenDto.refreshTokenKey)
-                || !contains(LoginTokenDto.expiresAtKey)) {
+                || !contains(LoginTokenDto.expiresAtKey)
+                || !contains(LoginTokenDto.idKey)
+                || !contains((LoginTokenDto.emailKey))) {
             return Outcome.err(new NullPointerException());
         }
         return Outcome.ok(new LoginTokenDto(
                 getString(LoginTokenDto.accessTokenKey),
                 getString(LoginTokenDto.refreshTokenKey),
-                getLong(LoginTokenDto.expiresAtKey)
+                getLong(LoginTokenDto.expiresAtKey),
+                getString(LoginTokenDto.idKey),
+                getString(LoginTokenDto.emailKey)
         ));
     }
 }

@@ -42,25 +42,25 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
         );
         Outcome<Response<LoginResponseDto>, IOException> outcome = Outcome.make(call::execute);
         if (outcome.hasErr()) {
-            return new LoginResult(LoginResult.CODE.NET_ERROR, "Network Error");
+            return new LoginResult(LoginResult.CODE.UNSUCCESSFUL, "Network Error");
         }
         var response = outcome.unwrap();
         if (response.isSuccessful() && response.body() != null) {
             var token = new LoginTokenDto(response.body());
             authStorage.saveToken(token);
-            return new LoginResult(LoginResult.CODE.SUCCESS, "Login successfully");
+            return new LoginResult(LoginResult.CODE.SUCCESSFUL_LOGIN, "Login successfully");
         }
         var errBody = response.errorBody();
         if (errBody == null) {
-            return new LoginResult(LoginResult.CODE.INVALID, "Network Error");
+            return new LoginResult(LoginResult.CODE.INVALID_LOGIN_INFO, "Network Error");
         }
         Outcome<LoginErrorResponseDto, IOException> errorOutcome = Outcome.make(() -> new Gson()
                 .fromJson(errBody.string(), LoginErrorResponseDto.class));
         errBody.close();
         if (errorOutcome.isOK()) {
-            return new LoginResult(LoginResult.CODE.INVALID, errorOutcome.unwrap().msg);
+            return new LoginResult(LoginResult.CODE.INVALID_LOGIN_INFO, errorOutcome.unwrap().msg);
         } else {
-            return new LoginResult(LoginResult.CODE.INVALID, "Something Went Wrong");
+            return new LoginResult(LoginResult.CODE.INVALID_LOGIN_INFO, "Something Went Wrong");
         }
     }
 
@@ -71,8 +71,12 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
             return new LoginResult(LoginResult.CODE.LOGGED_OUT, "Token does not exists.");
         }
         LoginTokenDto tokenDto = outcome.unwrap();
-        // TODO:
-        return new LoginResult(LoginResult.CODE.SUCCESS, "Login successfully");
+        if (System.currentTimeMillis() > (tokenDto.getExpiresAt() * 1_000) - 30_000) {
+            // TODO: Get a new Access token by refreshing.
+            return new LoginResult(LoginResult.CODE.OFFLINE_EXPIRED, "Login successfully");
+        } else {
+            return new LoginResult(LoginResult.CODE.SUCCESSFUL_LOGGED_IN, "Login successfully");
+        }
     }
 
     @Override

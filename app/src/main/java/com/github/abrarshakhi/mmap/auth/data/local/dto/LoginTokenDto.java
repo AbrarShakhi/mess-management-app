@@ -10,21 +10,36 @@ public class LoginTokenDto {
     public static final String accessTokenKey = "accessToken";
     public static final String refreshTokenKey = "refreshToken";
     public static final String expiresAtKey = "expiresAt";
+    public static final String idKey = "id";
+    public static final String emailKey = "email";
     private final String accessToken;
     private final String refreshToken;
     private final Long expiresAt;
+    private final String userId;
+    private final String email;
 
     @Contract(pure = true)
     public LoginTokenDto(@NonNull LoginResponseDto data) {
         this.accessToken = data.accessToken;
         this.refreshToken = data.refreshToken;
         this.expiresAt = data.expiresAt;
+        this.userId = data.user.id;
+        this.email = data.user.email;
     }
-
-    public LoginTokenDto(String accessToken, String refreshToken, Long expiresAt) {
+    public LoginTokenDto(String accessToken, String refreshToken, Long expiresAt, String userId, String email) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresAt = expiresAt;
+        this.userId = userId;
+        this.email = email;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getAccessToken() {
