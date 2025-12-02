@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +15,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.local.storage.AuthStorage;
-import com.github.abrarshakhi.mmap.auth.data.remote.api.AuthApiService;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
@@ -24,12 +23,12 @@ import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.LoginNavigation;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
 import com.github.abrarshakhi.mmap.core.connection.ApiModule;
-import com.github.abrarshakhi.mmap.core.utils.Outcome;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEt;
     private EditText passEt;
     private Button loginBtn;
+    private LinearLayout loginLayout;
     private TextView errorStatus, goToSignUp, forgotPassword;
     private LoginViewModel viewModel;
     private LoginNavigation navigation;
@@ -37,17 +36,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        AuthApiService api = ApiModule.getInstance().provideAuthApiService();
-        Outcome<AuthStorage, Throwable> localStorage = AuthStorage.getInstance(this);
-        LoginRepository repo = new AuthRepositoryImpl(api, localStorage.unwrapOr(null));
-        LoginUseCase loginUseCase = new LoginUseCase(repo);
-        CheckLoginUseCase checkLoginUseCase = new CheckLoginUseCase(repo);
-        viewModel = new LoginViewModel(loginUseCase, checkLoginUseCase);
-
-        viewModel.isLoggedIn();
-        navigation = new LoginNavigation(this);
-
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
@@ -56,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
+        loginLayout = findViewById(R.id.llLogin);
         emailEt = findViewById(R.id.editEmail);
         passEt = findViewById(R.id.editPassword);
         loginBtn = findViewById(R.id.btnLogin);
@@ -63,11 +52,25 @@ public class LoginActivity extends AppCompatActivity {
         goToSignUp = findViewById(R.id.tvGoToSignUp);
         forgotPassword = findViewById(R.id.tvForgotPassword);
 
+        loginLayout.setVisibility(View.GONE);
+
+        LoginRepository repo = new AuthRepositoryImpl(
+            ApiModule.getInstance().provideAuthApiService(),
+            AuthStorage.getInstance(this).unwrapOr(null)
+        );
+        viewModel = new LoginViewModel(
+            new LoginUseCase(repo),
+            new CheckLoginUseCase(repo)
+        );
+
+        viewModel.isLoggedIn();
+        navigation = new LoginNavigation(this);
+
         loginBtn.setOnClickListener(v -> {
             loginBtn.setEnabled(false);
             viewModel.login(
-                    emailEt.getText().toString(),
-                    passEt.getText().toString()
+                emailEt.getText().toString(),
+                passEt.getText().toString()
             );
         });
         goToSignUp.setOnClickListener(v -> {
@@ -80,6 +83,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         viewModel.loginResult.observe(this, result -> {
+            loginLayout.setVisibility(View.VISIBLE);
             loginBtn.setEnabled(true);
             if (result.isSuccess()) {
                 errorStatus.setVisibility(View.GONE);
