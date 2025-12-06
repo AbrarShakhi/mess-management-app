@@ -22,9 +22,9 @@ import com.github.abrarshakhi.mmap.core.connection.ApiModule;
 
 public class SignupActivity extends AppCompatActivity {
     EditText etFullNameSignup, etPhoneSignup, etEmailSignup, etPasswordSignup,
-            etConfirmPasswordSignup, etOtpSignup, btnSendOtpSignup;
+            etConfirmPasswordSignup, etOtpSignup;
     Button btnSignup, btnSubmitOtpSignup;
-    TextView tvGoToLogin;
+    TextView tvGoToLogin, btnSendOtpSignup;
     LinearLayout llEnterOtp;
 
     SignupViewModel viewModel;
