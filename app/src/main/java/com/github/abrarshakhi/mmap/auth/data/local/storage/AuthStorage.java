@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 
-import com.github.abrarshakhi.mmap.auth.data.local.dto.LoginTokenDto;
+import com.github.abrarshakhi.mmap.auth.data.local.dao.LoginTokenDao;
 import com.github.abrarshakhi.mmap.core.storage.LocalPreferences;
 import com.github.abrarshakhi.mmap.core.utils.Outcome;
 
@@ -40,28 +40,28 @@ public class AuthStorage extends LocalPreferences {
         return Outcome.ok(instance);
     }
 
-    public void saveToken(LoginTokenDto token) {
-        saveString(LoginTokenDto.accessTokenKey, token.getAccessToken());
-        saveString(LoginTokenDto.refreshTokenKey, token.getRefreshToken());
-        saveLong(LoginTokenDto.expiresAtKey, token.getExpiresAt());
-        saveString(LoginTokenDto.emailKey, token.getEmail());
-        saveString(LoginTokenDto.idKey, token.getUserId());
+    public void saveToken(LoginTokenDao token) {
+        saveString(LoginTokenDao.accessTokenKey, token.getAccessToken());
+        saveString(LoginTokenDao.refreshTokenKey, token.getRefreshToken());
+        saveLong(LoginTokenDao.expiresAtKey, token.getExpiresAt());
+        saveString(LoginTokenDao.emailKey, token.getEmail());
+        saveString(LoginTokenDao.idKey, token.getUserId());
     }
 
-    public Outcome<LoginTokenDto, NullPointerException> loadToken() {
-        if (!contains(LoginTokenDto.accessTokenKey)
-            || !contains(LoginTokenDto.refreshTokenKey)
-            || !contains(LoginTokenDto.expiresAtKey)
-            || !contains(LoginTokenDto.idKey)
-            || !contains((LoginTokenDto.emailKey))) {
+    public Outcome<LoginTokenDao, NullPointerException> loadToken() {
+        if (!contains(LoginTokenDao.accessTokenKey)
+            || !contains(LoginTokenDao.refreshTokenKey)
+            || !contains(LoginTokenDao.expiresAtKey)
+            || !contains(LoginTokenDao.idKey)
+            || !contains((LoginTokenDao.emailKey))) {
             return Outcome.err(new NullPointerException());
         }
-        return Outcome.ok(new LoginTokenDto(
-            getString(LoginTokenDto.accessTokenKey),
-            getString(LoginTokenDto.refreshTokenKey),
-            getLong(LoginTokenDto.expiresAtKey),
-            getString(LoginTokenDto.idKey),
-            getString(LoginTokenDto.emailKey)
+        return Outcome.ok(new LoginTokenDao(
+            getString(LoginTokenDao.accessTokenKey),
+            getString(LoginTokenDao.refreshTokenKey),
+            getLong(LoginTokenDao.expiresAtKey),
+            getString(LoginTokenDao.idKey),
+            getString(LoginTokenDao.emailKey)
         ));
     }
 }

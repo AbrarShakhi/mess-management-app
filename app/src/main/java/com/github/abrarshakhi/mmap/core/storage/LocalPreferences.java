@@ -34,7 +34,7 @@ public abstract class LocalPreferences {
         sp.edit().remove(key).apply();
     }
 
-    protected void clearAll() {
+    public void clearAll() {
         sp.edit().clear().apply();
     }
 }

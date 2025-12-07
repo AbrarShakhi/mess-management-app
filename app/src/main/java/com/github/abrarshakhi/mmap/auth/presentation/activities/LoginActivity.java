@@ -15,16 +15,14 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.auth.data.local.datasource.LocalDataSource;
-import com.github.abrarshakhi.mmap.auth.data.local.storage.AuthStorage;
-import com.github.abrarshakhi.mmap.auth.data.remote.datasource.RemoteDataSource;
+import com.github.abrarshakhi.mmap.auth.data.local.datasource.LocalAuthDataSource;
+import com.github.abrarshakhi.mmap.auth.data.remote.datasource.RemoteAuthDataSource;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.LoginNavigation;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
-import com.github.abrarshakhi.mmap.core.connection.ApiModule;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEt;
@@ -54,8 +52,8 @@ public class LoginActivity extends AppCompatActivity {
         goToSignUp = findViewById(R.id.tvGoToSignUp);
         forgotPassword = findViewById(R.id.tvForgotPassword);
 
-        var remoteDataSource = new RemoteDataSource();
-        var localDataSource = new LocalDataSource(this);
+        var remoteDataSource = new RemoteAuthDataSource();
+        var localDataSource = new LocalAuthDataSource(this);
         var repo = new AuthRepositoryImpl(remoteDataSource, localDataSource);
 
         var loginUseCase = new LoginUseCase(repo);

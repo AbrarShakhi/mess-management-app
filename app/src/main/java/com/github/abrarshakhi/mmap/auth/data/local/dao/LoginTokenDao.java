@@ -1,12 +1,12 @@
-package com.github.abrarshakhi.mmap.auth.data.local.dto;
+package com.github.abrarshakhi.mmap.auth.data.local.dao;
 
 import androidx.annotation.NonNull;
 
-import com.github.abrarshakhi.mmap.auth.data.remote.dto.LoginResponseDto;
+import com.github.abrarshakhi.mmap.auth.data.remote.dto.TokenResponseDto;
 
 import org.jetbrains.annotations.Contract;
 
-public class LoginTokenDto {
+public class LoginTokenDao {
     public static final String accessTokenKey = "accessToken";
     public static final String refreshTokenKey = "refreshToken";
     public static final String expiresAtKey = "expiresAt";
@@ -19,14 +19,14 @@ public class LoginTokenDto {
     private final String email;
 
     @Contract(pure = true)
-    public LoginTokenDto(@NonNull LoginResponseDto data) {
+    public LoginTokenDao(@NonNull TokenResponseDto data) {
         this.accessToken = data.accessToken;
         this.refreshToken = data.refreshToken;
         this.expiresAt = data.expiresAt;
         this.userId = data.user.id;
         this.email = data.user.email;
     }
-    public LoginTokenDto(String accessToken, String refreshToken, Long expiresAt, String userId, String email) {
+    public LoginTokenDao(String accessToken, String refreshToken, Long expiresAt, String userId, String email) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresAt = expiresAt;

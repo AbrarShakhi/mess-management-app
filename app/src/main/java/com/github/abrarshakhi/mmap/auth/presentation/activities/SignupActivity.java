@@ -15,8 +15,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.auth.data.local.datasource.LocalDataSource;
-import com.github.abrarshakhi.mmap.auth.data.remote.datasource.RemoteDataSource;
+import com.github.abrarshakhi.mmap.auth.data.local.datasource.LocalAuthDataSource;
+import com.github.abrarshakhi.mmap.auth.data.remote.datasource.RemoteAuthDataSource;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.SignupUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.VerifyOtpUseCase;
@@ -56,8 +56,8 @@ public class SignupActivity extends AppCompatActivity {
         btnSendOtpSignup = findViewById(R.id.btnSendOtpSignup);
         btnSubmitOtpSignup = findViewById(R.id.btnSubmitOtpSignup);
 
-        var remoteDataSource = new RemoteDataSource();
-        var localDataSource = new LocalDataSource(this);
+        var remoteDataSource = new RemoteAuthDataSource();
+        var localDataSource = new LocalAuthDataSource(this);
         var repo = new AuthRepositoryImpl(remoteDataSource, localDataSource);
 
         var signupUseCase = new SignupUseCase(repo);

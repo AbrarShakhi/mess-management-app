@@ -1,5 +1,6 @@
 package com.github.abrarshakhi.mmap.auth.data.mapper;
 
+import com.github.abrarshakhi.mmap.auth.data.remote.dto.RefreshTokenRequestDto;
 import com.github.abrarshakhi.mmap.auth.data.remote.dto.SignupRequestDto;
 import com.github.abrarshakhi.mmap.auth.domain.model.SignupRequest;
 
