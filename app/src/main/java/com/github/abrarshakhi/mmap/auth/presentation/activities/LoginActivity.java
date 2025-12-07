@@ -15,7 +15,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
+import com.github.abrarshakhi.mmap.auth.data.local.datasource.LocalDataSource;
 import com.github.abrarshakhi.mmap.auth.data.local.storage.AuthStorage;
+import com.github.abrarshakhi.mmap.auth.data.remote.datasource.RemoteDataSource;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
@@ -52,9 +54,9 @@ public class LoginActivity extends AppCompatActivity {
         goToSignUp = findViewById(R.id.tvGoToSignUp);
         forgotPassword = findViewById(R.id.tvForgotPassword);
 
-        var api = ApiModule.getInstance().provideAuthApiService();
-        var local = AuthStorage.getInstance(this).unwrapOr(null);
-        var repo = new AuthRepositoryImpl(api, local);
+        var remoteDataSource = new RemoteDataSource();
+        var localDataSource = new LocalDataSource(this);
+        var repo = new AuthRepositoryImpl(remoteDataSource, localDataSource);
 
         var loginUseCase = new LoginUseCase(repo);
         var checkIsLoggedIn = new CheckLoginUseCase(repo);

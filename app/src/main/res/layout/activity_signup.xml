@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F7FB"
+    android:fillViewport="true"
     tools:context=".auth.presentation.activities.SignupActivity"
     tools:ignore="HardcodedText,RtlHardcoded">
 
@@ -99,7 +100,7 @@
                     android:src="@drawable/ic_phone" />
 
                 <EditText
-                    android:id="@+id/etPhoneSignp"
+                    android:id="@+id/etPhoneSignup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:autofillHints="phone"
@@ -188,7 +189,6 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:backgroundTint="@color/button_bg"
-                android:enabled="false"
                 android:padding="12dp"
                 android:text="Sign Up"
                 android:textColor="@color/white"
@@ -196,58 +196,63 @@
 
             <LinearLayout
                 android:id="@+id/llEnterOtp"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
                 android:visibility="gone"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginRight="10dp"
-                    android:contentDescription="OTP"
-                    android:src="@drawable/ic_lock" />
-
-                <EditText
-                    android:id="@+id/etOtpSignup"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/black"
-                    android:layout_weight="1"
-                    android:autofillHints=""
-                    android:hint="Enter OTP"
-                    android:inputType="number" />
-
-                <TextView
-                    android:id="@+id/btnSendOtpSignup"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
                     android:layout_margin="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:padding="8dp"
-                    android:text="Send OTP"
-                    android:textColor="#2962FF"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginRight="10dp"
+                        android:contentDescription="OTP"
+                        android:src="@drawable/ic_lock" />
+
+                    <EditText
+                        android:id="@+id/etOtpSignup"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:autofillHints=""
+                        android:hint="Enter OTP"
+                        android:inputType="number"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/btnSendOtpSignup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="10dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:padding="8dp"
+                        android:text="Send OTP"
+                        android:textColor="#2962FF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnSubmitOtpSignup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:backgroundTint="@color/button_bg"
+                    android:padding="12dp"
+                    android:text="Submit OTP"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
             </LinearLayout>
-
-            <Button
-                android:id="@+id/btnSubmitOtpSignup"
-                android:visibility="gone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:backgroundTint="@color/button_bg"
-                android:padding="12dp"
-                android:text="Submit OTP"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
         </LinearLayout>
 
         <LinearLayout

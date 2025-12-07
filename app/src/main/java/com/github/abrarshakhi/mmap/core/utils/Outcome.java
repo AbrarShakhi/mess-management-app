@@ -69,9 +69,9 @@ public interface Outcome<V, E> {
     static <V, E> Outcome<V, E> make(Callable<V> callable) {
         try {
             V value = callable.call();
-            return new Ok<>(value);
+            return Outcome.ok(value);
         } catch (Throwable e) {
-            return new Err<>((E) e);
+            return Outcome.err((E) e);
         }
     }
 

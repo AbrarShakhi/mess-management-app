@@ -75,4 +75,8 @@ dependencies {
 
     // crypto
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
+
+//    implementation("io.github.lehuyh:supabase-java:1.1.0")
+//    implementation("com.github.skhanal5:supabase-java:1.0.0")
+//    implementation("io.github.supabase-community:supabase-kt:2.1.0")
 }
