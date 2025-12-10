@@ -2,11 +2,8 @@ import java.util.Properties;
 
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
-
-val localProps = Properties()
-localProps.load(rootProject.file("local.properties").inputStream())
-val supabaseAnonKey: String = localProps.getProperty("SUPABASE_ANON_KEY")
 
 android {
     namespace = "com.github.abrarshakhi.mmap"
@@ -28,11 +25,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField(
-            "String",
-            "SUPABASE_ANON_KEY",
-            "\"$supabaseAnonKey\""
-        )
     }
 
     buildTypes {
@@ -61,22 +53,25 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    // firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth)
+
+
     // room
-    implementation("androidx.room:room-runtime:2.8.4")
-    annotationProcessor("androidx.room:room-compiler:2.8.4")
-    testImplementation("androidx.room:room-testing:2.8.4")
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+    testImplementation(libs.room.testing)
 
     // retrofit
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
     // OkHttp
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation(libs.logging.interceptor)
 
     // crypto
-    implementation("androidx.security:security-crypto:1.1.0-alpha03")
+    implementation(libs.security.crypto)
 
-//    implementation("io.github.lehuyh:supabase-java:1.1.0")
-//    implementation("com.github.skhanal5:supabase-java:1.0.0")
-//    implementation("io.github.supabase-community:supabase-kt:2.1.0")
 }

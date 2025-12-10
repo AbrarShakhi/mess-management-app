@@ -12,7 +12,6 @@
     android:id="@+id/llLogin"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:visibility="gone"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="24dp">
@@ -125,6 +124,15 @@
             android:textColor="#2962FF"
             android:textSize="14sp"
             android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/pbLogin"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:backgroundTint="#2962FF"
+            android:padding="12dp"/>
 
         <Button
             android:id="@+id/btnLogin"
