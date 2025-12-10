@@ -4,6 +4,8 @@
 output.json
 output-metadata.json
 
+google-services.json
+
 # Files for the ART/Dalvik VM
 *.dex
 
