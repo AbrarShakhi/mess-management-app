@@ -1,4 +1,4 @@
-package com.github.abrarshakhi.mmap.auth.domain.model;
+package com.github.abrarshakhi.mmap.auth.domain.usecase.request;
 
 public class LoginRequest {
     private String email;

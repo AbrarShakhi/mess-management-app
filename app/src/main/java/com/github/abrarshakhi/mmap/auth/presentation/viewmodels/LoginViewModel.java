@@ -3,8 +3,8 @@ package com.github.abrarshakhi.mmap.auth.presentation.viewmodels;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.github.abrarshakhi.mmap.auth.domain.model.LoginRequest;
-import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.request.LoginRequest;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.result.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 

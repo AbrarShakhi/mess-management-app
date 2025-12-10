@@ -1,6 +1,6 @@
 package com.github.abrarshakhi.mmap.auth.presentation.navigations;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -11,33 +11,43 @@ import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
 import org.jetbrains.annotations.NotNull;
 
 public class LoginNavigation {
-    private final Context context;
+    private final Activity activity;
 
-    public LoginNavigation(@NotNull Context context) {
-        this.context = context;
+    public LoginNavigation(@NotNull Activity activity) {
+        this.activity = activity;
     }
 
-    public void toHomeActivity() {
-        context.startActivity(new Intent(context, HomeActivity.class));
+    public LoginNavigation toHomeActivity() {
+        activity.startActivity(new Intent(activity, HomeActivity.class));
+        return this;
     }
 
-    public void toHomeActivity(@NotNull Bundle bundle) {
-        context.startActivity(new Intent(context, HomeActivity.class).putExtras(bundle));
+    public LoginNavigation toHomeActivity(@NotNull Bundle bundle) {
+        activity.startActivity(new Intent(activity, HomeActivity.class).putExtras(bundle));
+        return this;
     }
 
-    public void toSignupActivity() {
-        context.startActivity(new Intent(context, SignupActivity.class));
+    public LoginNavigation toSignupActivity() {
+        activity.startActivity(new Intent(activity, SignupActivity.class));
+        return this;
     }
 
-    public void toSignupActivity(@NotNull Bundle bundle) {
-        context.startActivity(new Intent(context, SignupActivity.class).putExtras(bundle));
+    public LoginNavigation toSignupActivity(@NotNull Bundle bundle) {
+        activity.startActivity(new Intent(activity, SignupActivity.class).putExtras(bundle));
+        return this;
     }
 
-    public void toForgetPasswordActivity() {
-        context.startActivity(new Intent(context, ForgetPasswordActivity.class));
+    public LoginNavigation toForgetPasswordActivity() {
+        activity.startActivity(new Intent(activity, ForgetPasswordActivity.class));
+        return this;
     }
 
-    public void toForgetPasswordActivity(@NotNull Bundle bundle) {
-        context.startActivity(new Intent(context, ForgetPasswordActivity.class).putExtras(bundle));
+    public LoginNavigation toForgetPasswordActivity(@NotNull Bundle bundle) {
+        activity.startActivity(new Intent(activity, ForgetPasswordActivity.class).putExtras(bundle));
+        return this;
+    }
+
+    public void finishAffinity() {
+        activity.finishAffinity();
     }
 }

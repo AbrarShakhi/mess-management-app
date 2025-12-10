@@ -2,8 +2,8 @@ package com.github.abrarshakhi.mmap.auth.domain.usecase;
 
 import androidx.annotation.NonNull;
 
-import com.github.abrarshakhi.mmap.auth.domain.model.LoginRequest;
-import com.github.abrarshakhi.mmap.auth.domain.model.LoginResult;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.request.LoginRequest;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.result.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
 
 public class LoginUseCase {

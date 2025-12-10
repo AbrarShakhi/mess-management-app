@@ -18,6 +18,7 @@ roomCompiler = "2.8.4"
 roomRuntime = "2.8.4"
 roomTesting = "2.8.4"
 securityCrypto = "1.1.0"
+firebaseFirestore = "26.0.2"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
@@ -40,6 +41,7 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCom
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "roomTesting" }
 security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

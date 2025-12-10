@@ -2,9 +2,9 @@ package com.github.abrarshakhi.mmap.auth.domain.usecase;
 
 import androidx.annotation.NonNull;
 
-import com.github.abrarshakhi.mmap.auth.domain.model.SignupRequest;
-import com.github.abrarshakhi.mmap.auth.domain.model.SignupResult;
 import com.github.abrarshakhi.mmap.auth.domain.repository.SignupRepository;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.request.SignupRequest;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.result.SignupResult;
 
 public class SignupUseCase {
     private final SignupRepository repository;
@@ -19,7 +19,7 @@ public class SignupUseCase {
             return SignupResult.failure("Full name cannot be empty");
         }
 
-        if (isNullOrEmpty(request.getEmailAddress()) || !isValidEmail(request.getEmailAddress())) {
+        if (isNullOrEmpty(request.getEmail()) || !isValidEmail(request.getEmail())) {
             return SignupResult.failure("Invalid email address");
         }
 
@@ -31,7 +31,7 @@ public class SignupUseCase {
             return SignupResult.failure("Passwords do not match");
         }
 
-        String phone = request.getPhoneNumber();
+        String phone = request.getPhone();
 
         if (!isNullOrEmpty(phone)) {
             if (!isValidBangladeshPhoneNumber(phone)) {

@@ -11,9 +11,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.auth.domain.repository.SignupRepository;
+import com.github.abrarshakhi.mmap.auth.data.datasourse.RemoteDataSource;
+import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
+import com.github.abrarshakhi.mmap.auth.domain.model.User;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.SignupUseCase;
-import com.github.abrarshakhi.mmap.auth.domain.usecase.VerifyOtpUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.SignupNavigation;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.SignupViewModel;
 import com.github.abrarshakhi.mmap.databinding.ActivitySignupBinding;
@@ -37,55 +38,44 @@ public class SignupActivity extends AppCompatActivity {
             return insets;
         });
 
-        SignupRepository repo = null;
-
+        var datasource = new RemoteDataSource();
+        var repo = new AuthRepositoryImpl(datasource);
         var signupUseCase = new SignupUseCase(repo);
-        var verifyOtpCuseCase = new VerifyOtpUseCase(repo);
-        viewModel = new SignupViewModel(signupUseCase, verifyOtpCuseCase);
+        viewModel = new SignupViewModel(signupUseCase);
         navigation = new SignupNavigation(this);
 
         // Go to login button
-        binding.tvGoToLogin.setOnClickListener(v -> {
-            navigation.toLoginActivity();
-            finishAffinity();
-        });
+        binding.tvGoToLogin.setOnClickListener(v ->
+            navigation.toLoginActivity().finishAffinity()
+        );
 
         // Signup button
         binding.btnSignup.setOnClickListener(v -> {
-            binding.btnSignup.setEnabled(false);
+            binding.pbSignup.setVisibility(View.VISIBLE);
+            binding.btnSignup.setVisibility(View.GONE);
             viewModel.signup(
-                    binding.etFullNameSignup.getText().toString(),
-                    binding.etPhoneSignup.getText().toString(),
-                    binding.etEmailSignup.getText().toString(),
-                    binding.etPasswordSignup.getText().toString(),
-                    binding.etConfirmPasswordSignup.getText().toString()
+                binding.etFullNameSignup.getText().toString(),
+                binding.etPhoneSignup.getText().toString(),
+                binding.etEmailSignup.getText().toString(),
+                binding.etPasswordSignup.getText().toString(),
+                binding.etConfirmPasswordSignup.getText().toString()
             );
         });
         viewModel.signupResult.observe(this, (result) -> {
-            binding.btnSignup.setEnabled(true);
             if (result.isSuccess()) {
-                binding.btnSignup.setVisibility(View.GONE);
-                binding.llEnterOtp.setVisibility(View.VISIBLE);
-                binding.etEmailSignup.setEnabled(false);
+                User user = result.getUser();
+                if (user != null) {
+                    Toast
+                        .makeText(SignupActivity.this, "Sent a link to your email: " + user.getFullName(), Toast.LENGTH_SHORT)
+                        .show();
+                    navigation.toLoginActivity().finishAffinity();
+                    return;
+                }
+            } else {
+                binding.etErrorStatusSignUp.setText(result.getErrorMessage());
             }
-            Toast.makeText(SignupActivity.this, result.getMessage(), Toast.LENGTH_SHORT).show();
-        });
-
-        // verify OTP button
-        binding.btnSubmitOtpSignup.setOnClickListener(v -> {
-            binding.btnSubmitOtpSignup.setEnabled(false);
-            viewModel.verifyOtp(
-                    binding.etEmailSignup.getText().toString(),
-                    binding.etOtpSignup.getText().toString()
-            );
-        });
-        viewModel.verifyOtpResult.observe(this, (result) -> {
-            binding.btnSubmitOtpSignup.setEnabled(true);
-            if (result.isSuccess()) {
-                navigation.toLoginActivity();
-                finishAffinity();
-            }
-            Toast.makeText(SignupActivity.this, result.getMessage(), Toast.LENGTH_SHORT).show();
+            binding.pbSignup.setVisibility(View.GONE);
+            binding.btnSignup.setVisibility(View.VISIBLE);
         });
     }
 }
