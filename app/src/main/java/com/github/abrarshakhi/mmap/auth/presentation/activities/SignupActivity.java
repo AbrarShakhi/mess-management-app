@@ -38,15 +38,17 @@ public class SignupActivity extends AppCompatActivity {
             return insets;
         });
 
-        var datasource = new RemoteDataSource();
+        var datasource = new RemoteDataSource(this);
         var repo = new AuthRepositoryImpl(datasource);
         var signupUseCase = new SignupUseCase(repo);
         viewModel = new SignupViewModel(signupUseCase);
         navigation = new SignupNavigation(this);
 
         // Go to login button
-        binding.tvGoToLogin.setOnClickListener(v ->
-            navigation.toLoginActivity().finishAffinity()
+        binding.tvGoToLogin.setOnClickListener(v -> {
+                navigation.toLoginActivity();
+                finishAffinity();
+            }
         );
 
         // Signup button
@@ -63,16 +65,19 @@ public class SignupActivity extends AppCompatActivity {
         });
         viewModel.signupResult.observe(this, (result) -> {
             if (result.isSuccess()) {
+                binding.etErrorStatusSignUp.setVisibility(View.GONE);
                 User user = result.getUser();
                 if (user != null) {
                     Toast
                         .makeText(SignupActivity.this, "Sent a link to your email: " + user.getFullName(), Toast.LENGTH_SHORT)
                         .show();
-                    navigation.toLoginActivity().finishAffinity();
+                    navigation.toLoginActivity();
+                    finishAffinity();
                     return;
                 }
             } else {
                 binding.etErrorStatusSignUp.setText(result.getErrorMessage());
+                binding.etErrorStatusSignUp.setVisibility(View.VISIBLE);
             }
             binding.pbSignup.setVisibility(View.GONE);
             binding.btnSignup.setVisibility(View.VISIBLE);

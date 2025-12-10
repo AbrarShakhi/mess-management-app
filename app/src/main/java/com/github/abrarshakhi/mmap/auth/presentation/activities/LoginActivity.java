@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        var dataSource = new RemoteDataSource();
+        var dataSource = new RemoteDataSource(this);
         var repo = new AuthRepositoryImpl(dataSource);
         var loginUseCase = new LoginUseCase(repo);
         var checkIsLoggedIn = new CheckLoginUseCase(repo);
@@ -48,11 +48,15 @@ public class LoginActivity extends AppCompatActivity {
 
         navigation = new LoginNavigation(this);
 
-        binding.tvGoToSignUp.setOnClickListener(v ->
-            navigation.toSignupActivity().finishAffinity()
+        binding.tvGoToSignUp.setOnClickListener(v -> {
+                navigation.toSignupActivity();
+                finishAffinity();
+            }
         );
-        binding.tvForgotPassword.setOnClickListener(v ->
-            navigation.toForgetPasswordActivity().finishAffinity()
+        binding.tvForgotPassword.setOnClickListener(v ->{
+                navigation.toForgetPasswordActivity();
+                finishAffinity();
+            }
         );
 
         binding.btnLogin.setOnClickListener(v -> {
@@ -63,16 +67,19 @@ public class LoginActivity extends AppCompatActivity {
 
         viewModel.loginResult.observe(this, result -> {
             if (result.isSuccess()) {
+                binding.etErrorStatus.setVisibility(View.GONE);
                 User user = result.getUser();
                 if (user != null) {
                     Toast
                         .makeText(LoginActivity.this, "Logged in as " + user.getFullName(), Toast.LENGTH_SHORT)
                         .show();
-                    navigation.toHomeActivity().finishAffinity();
+                    navigation.toHomeActivity();
+                    finishAffinity();
                     return;
                 }
             } else {
                 binding.etErrorStatus.setText(result.getErrorMessage());
+                binding.etErrorStatus.setVisibility(View.VISIBLE);
             }
             binding.btnLogin.setVisibility(View.VISIBLE);
             binding.pbLogin.setVisibility(View.GONE);

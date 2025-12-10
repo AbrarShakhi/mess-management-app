@@ -1,14 +1,19 @@
 package com.github.abrarshakhi.mmap.auth.presentation.viewmodels;
 
+import android.os.Looper;
+import android.util.Log;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.github.abrarshakhi.mmap.auth.domain.usecase.SignupUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.request.SignupRequest;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.result.SignupResult;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

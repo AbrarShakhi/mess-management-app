@@ -29,7 +29,6 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
                 request.getEmail(),
                 request.getPassword()
             );
-            Tasks.await(authTask);
 
             if (!authTask.isSuccessful()) {
                 return SignupResult.failure(authTask.getException().getMessage());
@@ -54,8 +53,6 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
             );
 
             Task<Void> writeTask = remoteDataSource.saveUserProfile(uid, dto);
-            Tasks.await(writeTask);
-
             if (!writeTask.isSuccessful()) {
                 return SignupResult.failure(authTask.getException().getMessage());
             }
@@ -76,7 +73,6 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
                 request.getEmail(),
                 request.getPassword()
             );
-            Tasks.await(authTask);
 
             if (!authTask.isSuccessful()) {
                 return LoginResult.failure(authTask.getException().getMessage());
@@ -91,7 +87,6 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
                 remoteDataSource.logout();
                 return LoginResult.failure("Unable to find user");
             }
-            Tasks.await(fetchTask);
 
             UserDto userDto = fetchTask.getResult();
             if (userDto == null) {
@@ -111,9 +106,9 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
     public LoginResult isLoggedIn() {
         try {
             if (!remoteDataSource.isLoggedIn()) {
-                return LoginResult.failure("Login first");
+                return LoginResult.failure("");
             }
-            if (remoteDataSource.isEmailVerified(remoteDataSource.getCurrentUser())) {
+            if (!remoteDataSource.isEmailVerified(remoteDataSource.getCurrentUser())) {
                 return LoginResult.failure("Please verify your email");
             }
 
@@ -122,7 +117,6 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
                 remoteDataSource.logout();
                 return LoginResult.failure("Unable to find user");
             }
-            Tasks.await(fetchTask);
 
             UserDto userDto = fetchTask.getResult();
             if (userDto == null) {
