@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#F5F7FB"
     tools:context=".home.presentation.activities.HomeActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
@@ -30,6 +31,7 @@
         android:id="@+id/bnvMainNavBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_navigation_menu" />
 
 </LinearLayout>

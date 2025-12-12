@@ -1,4 +1,4 @@
-package com.github.abrarshakhi.mmap.auth.data.model;
+package com.github.abrarshakhi.mmap.auth.data.dto;
 
 public class UserDto {
     public String fullName;

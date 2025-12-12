@@ -2,7 +2,7 @@ package com.github.abrarshakhi.mmap.auth.data.mapper;
 
 import androidx.annotation.NonNull;
 
-import com.github.abrarshakhi.mmap.auth.data.model.UserDto;
+import com.github.abrarshakhi.mmap.auth.data.dto.UserDto;
 import com.github.abrarshakhi.mmap.auth.domain.model.User;
 
 import org.jetbrains.annotations.Contract;

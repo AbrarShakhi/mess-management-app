@@ -33,18 +33,22 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         navigation = new NavigationManager(
-            getSupportFragmentManager(),
-            R.id.flMainFrameLayout,
-            getSupportActionBar()
+                getSupportFragmentManager(),
+                R.id.flMainFrameLayout,
+                getSupportActionBar()
         );
 
         setSupportActionBar(binding.topAppBar);
+        navigation.navigate();
 
         binding.bnvMainNavBar.setOnItemSelectedListener(item -> {
             navigation.navigate(NavDestination.fromMenuId(item.getItemId()));
             return true;
         });
+    }
 
-        navigation.navigate(NavDestination.HOME);
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 }

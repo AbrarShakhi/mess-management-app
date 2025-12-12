@@ -1,10 +1,5 @@
 <resources>
 
     <style name="Base.Theme.MessManagementApp" parent="Theme.Material3.DayNight.NoActionBar">
-
-        <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorOnPrimary">@color/color_on_primary</item>
-        <item name="colorPrimaryContainer">@color/color_primary_container</item>
-
     </style>
 </resources>

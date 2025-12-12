@@ -1,8 +1,8 @@
 package com.github.abrarshakhi.mmap.auth.data.repository;
 
-import com.github.abrarshakhi.mmap.auth.data.datasourse.RemoteDataSource;
+import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
+import com.github.abrarshakhi.mmap.auth.data.dto.UserDto;
 import com.github.abrarshakhi.mmap.auth.data.mapper.UserMapper;
-import com.github.abrarshakhi.mmap.auth.data.model.UserDto;
 import com.github.abrarshakhi.mmap.auth.domain.model.User;
 import com.github.abrarshakhi.mmap.auth.domain.repository.LoginRepository;
 import com.github.abrarshakhi.mmap.auth.domain.repository.SignupRepository;
@@ -11,23 +11,22 @@ import com.github.abrarshakhi.mmap.auth.domain.usecase.request.SignupRequest;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.result.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.result.SignupResult;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 
 public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
-    private final RemoteDataSource remoteDataSource;
+    private final AuthDataSource authDataSource;
 
-    public AuthRepositoryImpl(RemoteDataSource remoteDataSource) {
-        this.remoteDataSource = remoteDataSource;
+    public AuthRepositoryImpl(AuthDataSource authDataSource) {
+        this.authDataSource = authDataSource;
     }
 
     @Override
     public SignupResult signup(SignupRequest request) {
         try {
-            Task<AuthResult> authTask = remoteDataSource.signup(
-                request.getEmail(),
-                request.getPassword()
+            Task<AuthResult> authTask = authDataSource.signup(
+                    request.getEmail(),
+                    request.getPassword()
             );
 
             if (!authTask.isSuccessful()) {
@@ -39,7 +38,7 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
                 return SignupResult.failure("Unable to create user");
             }
 
-            Task<Void> sendEmailTask = remoteDataSource.sendEmailVerification(user);
+            Task<Void> sendEmailTask = authDataSource.sendEmailVerification(user);
             if (!sendEmailTask.isSuccessful()) {
                 return SignupResult.failure(authTask.getException().getMessage());
             }
@@ -47,12 +46,12 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
             String uid = user.getUid();
 
             UserDto dto = new UserDto(
-                request.getFullName(),
-                request.getEmail(),
-                request.getPhone()
+                    request.getFullName(),
+                    request.getEmail(),
+                    request.getPhone()
             );
 
-            Task<Void> writeTask = remoteDataSource.saveUserProfile(uid, dto);
+            Task<Void> writeTask = authDataSource.saveUserProfile(uid, dto);
             if (!writeTask.isSuccessful()) {
                 return SignupResult.failure(authTask.getException().getMessage());
             }
@@ -69,32 +68,37 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
     @Override
     public LoginResult login(LoginRequest request) {
         try {
-            Task<AuthResult> authTask = remoteDataSource.login(
-                request.getEmail(),
-                request.getPassword()
+            Task<AuthResult> authTask = authDataSource.login(
+                    request.getEmail(),
+                    request.getPassword()
             );
 
             if (!authTask.isSuccessful()) {
                 return LoginResult.failure(authTask.getException().getMessage());
             }
 
-            if (remoteDataSource.isEmailVerified(remoteDataSource.getCurrentUser())) {
+            FirebaseUser user = authTask.getResult().getUser();
+            if (user == null) {
+                return LoginResult.failure("Unable to find user");
+            }
+
+            if (authDataSource.isNotEmailVerified(user)) {
                 return LoginResult.failure("Please verify your email");
             }
 
-            Task<UserDto> fetchTask = remoteDataSource.fetchUserProfile(remoteDataSource.getCurrentUser().getUid());
+            Task<UserDto> fetchTask = authDataSource.fetchUserProfile(user.getUid());
             if (fetchTask == null) {
-                remoteDataSource.logout();
+                authDataSource.logout();
                 return LoginResult.failure("Unable to find user");
             }
 
             UserDto userDto = fetchTask.getResult();
             if (userDto == null) {
-                remoteDataSource.logout();
+                authDataSource.logout();
                 return LoginResult.failure("User profile not found");
             }
 
-            User domainUser = UserMapper.dtoToDomain(remoteDataSource.getCurrentUser().getUid(), userDto);
+            User domainUser = UserMapper.dtoToDomain(user.getUid(), userDto);
 
             return LoginResult.success(domainUser);
         } catch (Exception e) {
@@ -105,25 +109,25 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
     @Override
     public LoginResult isLoggedIn() {
         try {
-            if (!remoteDataSource.isLoggedIn()) {
+            if (!authDataSource.isLoggedIn()) {
                 return LoginResult.failure("");
             }
-            if (!remoteDataSource.isEmailVerified(remoteDataSource.getCurrentUser())) {
+            if (authDataSource.isNotEmailVerified(authDataSource.getLoggedInUser())) {
                 return LoginResult.failure("Please verify your email");
             }
 
-            Task<UserDto> fetchTask = remoteDataSource.fetchUserProfile(remoteDataSource.getCurrentUser().getUid());
+            Task<UserDto> fetchTask = authDataSource.fetchUserProfile(authDataSource.getLoggedInUser().getUid());
             if (fetchTask == null) {
-                remoteDataSource.logout();
+                authDataSource.logout();
                 return LoginResult.failure("Unable to find user");
             }
 
             UserDto userDto = fetchTask.getResult();
             if (userDto == null) {
-                remoteDataSource.logout();
+                authDataSource.logout();
                 return LoginResult.failure("User profile not found");
             }
-            User domainUser = UserMapper.dtoToDomain(remoteDataSource.getCurrentUser().getUid(), userDto);
+            User domainUser = UserMapper.dtoToDomain(authDataSource.getLoggedInUser().getUid(), userDto);
 
             return LoginResult.success(domainUser);
         } catch (Exception e) {

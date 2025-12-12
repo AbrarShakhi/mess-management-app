@@ -11,7 +11,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.auth.data.datasourse.RemoteDataSource;
+import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.User;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.SignupUseCase;
@@ -38,7 +38,7 @@ public class SignupActivity extends AppCompatActivity {
             return insets;
         });
 
-        var datasource = new RemoteDataSource(this);
+        var datasource = new AuthDataSource(this);
         var repo = new AuthRepositoryImpl(datasource);
         var signupUseCase = new SignupUseCase(repo);
         viewModel = new SignupViewModel(signupUseCase);

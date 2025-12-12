@@ -11,11 +11,14 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MessManagementApp"
+        android:theme="@style/Base.Theme.MessManagementApp"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".home.presentation.activities.HomeActivity"
+            android:name=".mess.presentation.EditCreateMessActivity"
             android:exported="false" />
+        <activity
+            android:name=".home.presentation.activities.HomeActivity"
+            android:exported="true" />
         <activity
             android:name=".auth.presentation.activities.ForgetPasswordActivity"
             android:exported="false" />

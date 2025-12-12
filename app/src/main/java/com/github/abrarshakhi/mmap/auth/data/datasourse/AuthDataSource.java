@@ -1,8 +1,11 @@
 package com.github.abrarshakhi.mmap.auth.data.datasourse;
 
-import android.content.Context;
+import static android.content.Context.MODE_PRIVATE;
 
-import com.github.abrarshakhi.mmap.auth.data.model.UserDto;
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.github.abrarshakhi.mmap.auth.data.dto.UserDto;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
@@ -13,15 +16,27 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.concurrent.ExecutionException;
 
-public class RemoteDataSource {
+public class AuthDataSource {
+    private static boolean isInitialized = false;
+    protected final FirebaseAuth auth;
+    protected final FirebaseFirestore db;
+    protected SharedPreferences sp;
 
-    private final FirebaseAuth auth;
-    private final FirebaseFirestore db;
-
-    public RemoteDataSource(Context context) {
-        FirebaseApp.initializeApp(context);
+    public AuthDataSource(Context context) {
+        initFirebase(context);
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+    }
+
+    protected static SharedPreferences getSharedPreferences(Context context) {
+        return context.getSharedPreferences("APP_STATE", MODE_PRIVATE);
+    }
+
+    private static synchronized void initFirebase(Context context) {
+        if (!isInitialized) {
+            FirebaseApp.initializeApp(context);
+            isInitialized = true;
+        }
     }
 
     public Task<AuthResult> signup(String email, String password) throws ExecutionException, InterruptedException {
@@ -32,22 +47,22 @@ public class RemoteDataSource {
 
     public Task<Void> saveUserProfile(String uid, UserDto userDto) throws ExecutionException, InterruptedException {
         var asyncTask = db.collection("users")
-            .document(uid)
-            .set(userDto);
+                .document(uid)
+                .set(userDto);
         Tasks.await(asyncTask);
         return asyncTask;
     }
 
     public Task<UserDto> fetchUserProfile(String uid) throws ExecutionException, InterruptedException {
         var asyncTask = db.collection("users")
-            .document(uid)
-            .get()
-            .continueWith(task -> {
-                if (!task.isSuccessful()) {
-                    return null;
-                }
-                return task.getResult().toObject(UserDto.class);
-            });
+                .document(uid)
+                .get()
+                .continueWith(task -> {
+                    if (!task.isSuccessful()) {
+                        return null;
+                    }
+                    return task.getResult().toObject(UserDto.class);
+                });
         Tasks.await(asyncTask);
         return asyncTask;
     }
@@ -72,12 +87,12 @@ public class RemoteDataSource {
         return auth.getCurrentUser() != null;
     }
 
-    public FirebaseUser getCurrentUser() {
+    public FirebaseUser getLoggedInUser() {
         return auth.getCurrentUser();
     }
 
-    public boolean isEmailVerified(FirebaseUser user) {
-        return (user != null) && user.isEmailVerified();
+    public boolean isNotEmailVerified(FirebaseUser user) {
+        return (user == null) || !user.isEmailVerified();
     }
 
     public void logout() {

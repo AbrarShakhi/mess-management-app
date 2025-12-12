@@ -21,13 +21,14 @@ public class NavigationManager {
     private final FragmentManager fragmentManager;
     private final int containerId;
     private final ActionBar actionBar;
-
     private final Map<NavDestination, Fragment> fragmentCache = new HashMap<>();
+    private NavDestination lastNav;
 
     public NavigationManager(FragmentManager fragmentManager, int containerId, ActionBar actionBar) {
         this.fragmentManager = fragmentManager;
         this.containerId = containerId;
         this.actionBar = actionBar;
+        lastNav = NavDestination.HOME;
     }
 
     public void navigate(NavDestination destination) {
@@ -36,11 +37,19 @@ public class NavigationManager {
         if (actionBar != null) {
             actionBar.setTitle(destination.getTitle());
         }
-
+        lastNav = destination;
         fragmentManager
-            .beginTransaction()
-            .replace(containerId, fragment)
-            .commit();
+                .beginTransaction()
+                .replace(containerId, fragment)
+                .commit();
+    }
+
+    public void navigate() {
+        navigate(lastNav);
+    }
+
+    public NavDestination getLastNav() {
+        return lastNav;
     }
 
 

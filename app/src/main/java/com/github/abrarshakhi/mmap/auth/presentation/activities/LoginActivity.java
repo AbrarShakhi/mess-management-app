@@ -11,7 +11,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.auth.data.datasourse.RemoteDataSource;
+import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.User;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        var dataSource = new RemoteDataSource(this);
+        var dataSource = new AuthDataSource(this);
         var repo = new AuthRepositoryImpl(dataSource);
         var loginUseCase = new LoginUseCase(repo);
         var checkIsLoggedIn = new CheckLoginUseCase(repo);
@@ -48,22 +48,8 @@ public class LoginActivity extends AppCompatActivity {
 
         navigation = new LoginNavigation(this);
 
-        binding.tvGoToSignUp.setOnClickListener(v -> {
-                navigation.toSignupActivity();
-                finishAffinity();
-            }
-        );
-        binding.tvForgotPassword.setOnClickListener(v ->{
-                navigation.toForgetPasswordActivity();
-                finishAffinity();
-            }
-        );
-
-        binding.btnLogin.setOnClickListener(v -> {
-            binding.btnLogin.setVisibility(View.GONE);
-            binding.pbLogin.setVisibility(View.VISIBLE);
-            viewModel.login(binding.editEmail.getText().toString(), binding.editPassword.getText().toString());
-        });
+        binding.llLoading.setVisibility(View.VISIBLE);
+        binding.svLogin.setVisibility(View.GONE);
 
         viewModel.loginResult.observe(this, result -> {
             if (result.isSuccess()) {
@@ -71,18 +57,42 @@ public class LoginActivity extends AppCompatActivity {
                 User user = result.getUser();
                 if (user != null) {
                     Toast
-                        .makeText(LoginActivity.this, "Logged in as " + user.getFullName(), Toast.LENGTH_SHORT)
-                        .show();
+                            .makeText(LoginActivity.this, "Logged in as " + user.getFullName(), Toast.LENGTH_SHORT)
+                            .show();
                     navigation.toHomeActivity();
                     finishAffinity();
                     return;
                 }
             } else {
-                binding.etErrorStatus.setText(result.getErrorMessage());
-                binding.etErrorStatus.setVisibility(View.VISIBLE);
+                if (!result.getErrorMessage().isBlank()) {
+                    binding.etErrorStatus.setText(result.getErrorMessage());
+                    binding.etErrorStatus.setVisibility(View.VISIBLE);
+                }
+            }
+            if (binding.svLogin.getVisibility() == View.GONE) {
+                binding.svLogin.setVisibility(View.VISIBLE);
+                binding.llLoading.setVisibility(View.GONE);
             }
             binding.btnLogin.setVisibility(View.VISIBLE);
             binding.pbLogin.setVisibility(View.GONE);
+        });
+
+        binding.tvGoToSignUp.setOnClickListener(v -> {
+                    navigation.toSignupActivity();
+                    finishAffinity();
+                }
+        );
+
+        binding.tvForgotPassword.setOnClickListener(v -> {
+                    navigation.toForgetPasswordActivity();
+                    finishAffinity();
+                }
+        );
+
+        binding.btnLogin.setOnClickListener(v -> {
+            binding.btnLogin.setVisibility(View.GONE);
+            binding.pbLogin.setVisibility(View.VISIBLE);
+            viewModel.login(binding.editEmail.getText().toString(), binding.editPassword.getText().toString());
         });
     }
 

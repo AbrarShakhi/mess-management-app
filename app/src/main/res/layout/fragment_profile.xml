@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Full Name"
+            android:text=""
             android:textColor="#1A1A1A"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -44,32 +44,6 @@
             android:elevation="6dp"
             android:orientation="vertical"
             android:padding="20dp">
-
-            <!-- Full Name Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingVertical="12dp"
-                tools:ignore="UseCompoundDrawables">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="Name"
-                    android:src="@drawable/ic_person" />
-
-                <TextView
-                    android:id="@+id/tvName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="John Doe"
-                    android:textColor="#1A1A1A"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
 
             <!-- Divider -->
             <View
@@ -97,7 +71,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:text="+123 456 789"
+                    android:text=""
                     android:textColor="#1A1A1A"
                     android:textSize="16sp" />
 
@@ -129,7 +103,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:text="email@example.com"
+                    android:text=""
                     android:textColor="#1A1A1A"
                     android:textSize="16sp" />
 
@@ -139,13 +113,13 @@
 
         <!-- Buttons -->
         <Button
-            android:id="@+id/btnEditProfile"
+            android:id="@+id/btnEditMess"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:backgroundTint="@color/button_bg"
             android:padding="12dp"
-            android:text="Edit Profile"
+            android:text="Change Mess"
             android:textColor="@color/white"
             android:textSize="16sp" />
 
