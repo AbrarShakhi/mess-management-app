@@ -39,9 +39,9 @@ public class NavigationManager {
         }
         lastNav = destination;
         fragmentManager
-                .beginTransaction()
-                .replace(containerId, fragment)
-                .commit();
+            .beginTransaction()
+            .replace(containerId, fragment)
+            .commit();
     }
 
     public void navigate() {
@@ -51,7 +51,6 @@ public class NavigationManager {
     public NavDestination getLastNav() {
         return lastNav;
     }
-
 
     private Fragment getFragment(NavDestination destination) {
         if (fragmentCache.containsKey(destination)) {
@@ -65,7 +64,7 @@ public class NavigationManager {
 
     @NonNull
     @Contract("_ -> new")
-    private Fragment createFragment(NavDestination destination) {
+    private Fragment createFragment(@NonNull NavDestination destination) {
         switch (destination) {
             case HOME:
                 return HomeFragment.newInstance();

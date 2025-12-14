@@ -11,8 +11,11 @@ import com.github.abrarshakhi.mmap.auth.domain.usecase.request.SignupRequest;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.result.LoginResult;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.result.SignupResult;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.concurrent.ExecutionException;
 
 public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
     private final AuthDataSource authDataSource;
@@ -25,8 +28,8 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
     public SignupResult signup(SignupRequest request) {
         try {
             Task<AuthResult> authTask = authDataSource.signup(
-                    request.getEmail(),
-                    request.getPassword()
+                request.getEmail(),
+                request.getPassword()
             );
 
             if (!authTask.isSuccessful()) {
@@ -46,9 +49,9 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
             String uid = user.getUid();
 
             UserDto dto = new UserDto(
-                    request.getFullName(),
-                    request.getEmail(),
-                    request.getPhone()
+                request.getFullName(),
+                request.getEmail(),
+                request.getPhone()
             );
 
             Task<Void> writeTask = authDataSource.saveUserProfile(uid, dto);
@@ -59,7 +62,11 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
             var domainUser = UserMapper.dtoToDomain(uid, dto);
 
             return SignupResult.success(domainUser);
-
+        } catch (ExecutionException ee) {
+            if (ee.getCause() instanceof FirebaseNetworkException) {
+                return SignupResult.failure("No internet connection");
+            }
+            return SignupResult.failure(ee.getMessage());
         } catch (Exception e) {
             return SignupResult.failure(e.getMessage());
         }
@@ -69,8 +76,8 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
     public LoginResult login(LoginRequest request) {
         try {
             Task<AuthResult> authTask = authDataSource.login(
-                    request.getEmail(),
-                    request.getPassword()
+                request.getEmail(),
+                request.getPassword()
             );
 
             if (!authTask.isSuccessful()) {
@@ -101,6 +108,11 @@ public class AuthRepositoryImpl implements LoginRepository, SignupRepository {
             User domainUser = UserMapper.dtoToDomain(user.getUid(), userDto);
 
             return LoginResult.success(domainUser);
+        } catch (ExecutionException ee) {
+            if (ee.getCause() instanceof FirebaseNetworkException) {
+                return LoginResult.failure("No internet connection");
+            }
+            return LoginResult.failure(ee.getMessage());
         } catch (Exception e) {
             return LoginResult.failure(e.getMessage());
         }

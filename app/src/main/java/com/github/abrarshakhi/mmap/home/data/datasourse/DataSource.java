@@ -1,7 +1,5 @@
 package com.github.abrarshakhi.mmap.home.data.datasourse;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -10,7 +8,6 @@ import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
 import com.github.abrarshakhi.mmap.home.data.dto.MessDto;
 import com.github.abrarshakhi.mmap.home.data.dto.MessMemberDto;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -24,7 +21,7 @@ public class DataSource extends AuthDataSource {
         sp = getSharedPreferences(context);
     }
 
-    public void  saveCurrentMessId(String messId) {
+    public void saveCurrentMessId(String messId) {
         sp.edit().putString("CURR_MESS", messId).apply();
     }
 
@@ -46,8 +43,8 @@ public class DataSource extends AuthDataSource {
 
     public MessDto getMess(String messId) throws ExecutionException, InterruptedException {
         var task = db.collection("mess").document(messId)
-                .get()
-                .continueWith(t -> t.getResult().toObject(MessDto.class));
+            .get()
+            .continueWith(t -> t.getResult().toObject(MessDto.class));
 
         Tasks.await(task);
         return task.getResult();
@@ -55,37 +52,41 @@ public class DataSource extends AuthDataSource {
 
     public List<MessDto> getMessesForUser(String userId) throws ExecutionException, InterruptedException {
         var task = db.collectionGroup("mess_members")
-                .whereEqualTo("userId", userId)
-                .get();
+            .whereEqualTo("userId", userId)
+            .get();
 
         Tasks.await(task);
 
         List<MessDto> list = new ArrayList<>();
 
         for (QueryDocumentSnapshot doc : task.getResult()) {
-            String messId = doc.getReference().getParent().getParent().getId();
-            MessDto mess = getMess(messId);
+            MessMemberDto member = doc.toObject(MessMemberDto.class);
+            MessDto mess = getMess(member.messId);
             if (mess != null) list.add(mess);
         }
 
         return list;
     }
 
-    public void addMember(String messId, @NonNull MessMemberDto dto) throws ExecutionException, InterruptedException {
+    public void addMember(String messId, @NonNull MessMemberDto dto)
+        throws ExecutionException, InterruptedException {
+
+        dto.messId = messId;
+
         Tasks.await(
-                db.collection("mess")
-                        .document(messId)
-                        .collection("mess_members")
-                        .document(dto.userId)
-                        .set(dto)
+            db.collection("mess")
+                .document(messId)
+                .collection("mess_members")
+                .document(dto.userId)
+                .set(dto)
         );
     }
 
     public List<MessMemberDto> getMembers(String messId) throws ExecutionException, InterruptedException {
         var task = db.collection("mess")
-                .document(messId)
-                .collection("mess_members")
-                .get();
+            .document(messId)
+            .collection("mess_members")
+            .get();
 
         Tasks.await(task);
 
