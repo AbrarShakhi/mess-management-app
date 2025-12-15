@@ -60,6 +60,7 @@ public class HomeActivity extends AppCompatActivity {
                     navigation.navigate();
                 } else {
                     startActivity(new Intent(HomeActivity.this, EditCreateMessActivity.class));
+                    finish();
                 }
             } else {
                 Toast.makeText(HomeActivity.this, result.getErrorMsg(), Toast.LENGTH_LONG).show();
