@@ -18,6 +18,7 @@ import com.github.abrarshakhi.mmap.home.domain.usecase.FindMessUserCase;
 import com.github.abrarshakhi.mmap.home.presentation.navigations.NavDestination;
 import com.github.abrarshakhi.mmap.home.presentation.navigations.NavigationManager;
 import com.github.abrarshakhi.mmap.home.presentation.viewmodel.FindMessViewModel;
+import com.github.abrarshakhi.mmap.mess.presentation.AddMessActivity;
 import com.github.abrarshakhi.mmap.mess.presentation.EditCreateMessActivity;
 
 public class HomeActivity extends AppCompatActivity {
@@ -59,7 +60,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (result.isMessFound()) {
                     navigation.navigate();
                 } else {
-                    startActivity(new Intent(HomeActivity.this, EditCreateMessActivity.class));
+                    startActivity(new Intent(HomeActivity.this, AddMessActivity.class));
                     finish();
                 }
             } else {

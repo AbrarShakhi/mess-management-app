@@ -1,5 +1,6 @@
 package com.github.abrarshakhi.mmap.mess.presentation;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -29,8 +30,10 @@ public class EditCreateMessActivity extends AppCompatActivity {
         });
 
 
-        binding.btnCancel.setOnClickListener(v -> {
-            finish();
+
+        binding.btnCancel.setOnClickListener(v -> finish());
+        binding.btnAddMess.setOnClickListener(v -> {
+            startActivity(new Intent(EditCreateMessActivity.this, AddMessActivity.class));
         });
     }
 }
