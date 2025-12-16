@@ -28,8 +28,8 @@ public class FindMessRepositoryImpl implements FindMessRepository {
             }
             for (var mess : messes) {
                 for (var mem : ds.getMembers(mess.messId)) {
-                    if (!mem.role.equals(MessMemberRole.LEFT)) {
-                        ds.saveCurrentMessId(messes.get(0).messId);
+                    if (mem.userId.equals(userId) && !mem.role.equals(MessMemberRole.LEFT)) {
+                        ds.saveCurrentMessId(mess.messId);
                         return FindMessResult.success(true);
                     }
                 }

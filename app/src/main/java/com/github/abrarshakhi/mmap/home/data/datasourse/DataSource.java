@@ -94,4 +94,37 @@ public class DataSource extends AuthDataSource {
         task.getResult().forEach(doc -> list.add(doc.toObject(MessMemberDto.class)));
         return list;
     }
+
+    public void deleteMess(String messId)
+        throws ExecutionException, InterruptedException {
+
+        // 1. Get all members
+        var membersTask = db.collection("mess")
+            .document(messId)
+            .collection("mess_members")
+            .get();
+
+        Tasks.await(membersTask);
+
+        // 2. Delete members in a batch
+        var batch = db.batch();
+        for (QueryDocumentSnapshot doc : membersTask.getResult()) {
+            batch.delete(doc.getReference());
+        }
+
+        Tasks.await(batch.commit());
+
+        // 3. Delete mess document
+        Tasks.await(
+            db.collection("mess")
+                .document(messId)
+                .delete()
+        );
+
+        // 4. Clear current mess if needed
+        if (messId.equals(getCurrentMessId())) {
+            saveCurrentMessId("");
+        }
+    }
+
 }

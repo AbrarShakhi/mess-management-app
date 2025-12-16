@@ -5,18 +5,27 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
+import com.github.abrarshakhi.mmap.core.utils.Outcome;
 import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.data.dto.MessDto;
 import com.github.abrarshakhi.mmap.home.data.dto.MessMemberDto;
 import com.github.abrarshakhi.mmap.home.data.mapper.MessMapper;
 import com.github.abrarshakhi.mmap.home.data.mapper.MessMemberMapper;
+import com.github.abrarshakhi.mmap.home.domain.model.Mess;
 import com.github.abrarshakhi.mmap.mess.domain.repository.CreateNewMessRepository;
+import com.github.abrarshakhi.mmap.mess.domain.repository.DeleteMessRepository;
 import com.github.abrarshakhi.mmap.mess.domain.repository.FetchMessInfoRepository;
+import com.github.abrarshakhi.mmap.mess.domain.repository.FetchMessListRepository;
+import com.github.abrarshakhi.mmap.mess.domain.repository.SelectMessRepository;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.request.CreateNewMessRequest;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.result.CreateNewMessResult;
+import com.github.abrarshakhi.mmap.mess.domain.usecase.result.MessDeleteResult;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.result.MessInfoResult;
 
-public class MessRepositoryImpl implements CreateNewMessRepository, FetchMessInfoRepository {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MessRepositoryImpl implements CreateNewMessRepository, FetchMessInfoRepository, DeleteMessRepository, FetchMessListRepository, SelectMessRepository {
 
     private final DataSource dataSource;
 
@@ -35,6 +44,7 @@ public class MessRepositoryImpl implements CreateNewMessRepository, FetchMessInf
             messDto.city = request.city;
             messDto.currency = request.currency;
             messDto.month = java.time.LocalDate.now().getMonthValue() - 1;
+            messDto.year = java.time.LocalDate.now().getYear();
             messDto.createdBy = currentUserId;
             MessDto createdMess = dataSource.createMess(messDto);
 
@@ -73,6 +83,50 @@ public class MessRepositoryImpl implements CreateNewMessRepository, FetchMessInf
         } catch (Exception e) {
             return MessInfoResult.failure(e.getMessage());
         }
+    }
+
+    @Override
+    public MessDeleteResult deleteMess() {
+        try {
+            var userId = dataSource.getLoggedInUser().getUid();
+            var messId = dataSource.getCurrentMessId();
+
+            var messMembersDto = dataSource.getMembers(messId);
+            for (var messMemberDto : messMembersDto) {
+                if (!messMemberDto.userId.equals(userId)) {
+                    if (!messMemberDto.role.equals(MessMemberRole.LEFT)) {
+                        return new MessDeleteResult(false, "There is still a member in this mess unable to delete");
+                    }
+                }
+            }
+            dataSource.deleteMess(messId);
+            return new MessDeleteResult(true, "");
+        } catch (Exception e) {
+            return new MessDeleteResult(false, e.getMessage());
+        }
+    }
+
+    @Override
+    public Outcome<List<Mess>, String> fetchMessList() {
+        try {
+            var userId = dataSource.getLoggedInUser().getUid();
+            var messId = dataSource.getCurrentMessId();
+
+            List<MessDto> messDtoList = dataSource.getMessesForUser(userId);
+            List<Mess> messList = new ArrayList<>();
+            for (var itm : messDtoList) {
+                messList.add(MessMapper.dtoToDomain(itm));
+            }
+            return Outcome.success(messList);
+        } catch (Exception e) {
+            return Outcome.failure(e.getMessage());
+        }
+    }
+
+    @Override
+    public Outcome<Boolean, String> selectMess(String messId) {
+        dataSource.saveCurrentMessId(messId);
+        return Outcome.success(true);
     }
 }
 

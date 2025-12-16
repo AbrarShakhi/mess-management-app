@@ -7,7 +7,7 @@ public class MessMapper {
 
     public static Mess dtoToDomain(MessDto dto) {
         return new Mess(dto.messId, dto.name, dto.location, dto.city,
-                dto.month, dto.currency, dto.createdBy);
+                dto.month, dto.year, dto.currency, dto.createdBy);
     }
 
     public static MessDto domainToDto(Mess domain) {
@@ -17,6 +17,7 @@ public class MessMapper {
                 domain.getLocation(),
                 domain.getCity(),
                 domain.getMonth(),
+                domain.getYear(),
                 domain.getCurrency(),
                 domain.getCreatedBy()
         );

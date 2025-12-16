@@ -6,16 +6,18 @@ public class Mess {
     private final String location;
     private final String city;
     private final int month;
+    private final int year;
     private final String currency;
     private final String createdBy;
 
     public Mess(String messId, String name, String location, String city,
-                int month, String currency, String createdBy) {
+                int month, int year, String currency, String createdBy) {
         this.messId = messId;
         this.name = name;
         this.location = location;
         this.city = city;
         this.month = month;
+        this.year = year;
         this.currency = currency;
         this.createdBy = createdBy;
     }
@@ -46,5 +48,9 @@ public class Mess {
 
     public String getCreatedBy() {
         return createdBy;
+    }
+
+    public int getYear() {
+        return year;
     }
 }

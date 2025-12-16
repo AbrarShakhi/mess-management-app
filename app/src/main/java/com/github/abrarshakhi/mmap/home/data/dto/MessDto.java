@@ -6,18 +6,21 @@ public class MessDto {
     public String location;
     public String city;
     public int month;
+    public int year;
     public String currency;
     public String createdBy;
 
-    public MessDto() {}
+    public MessDto() {
+    }
 
     public MessDto(String messId, String name, String location, String city,
-                   int month, String currency, String createdBy) {
+                   int month, int year, String currency, String createdBy) {
         this.messId = messId;
         this.name = name;
         this.location = location;
         this.city = city;
         this.month = month;
+        this.year = year;
         this.currency = currency;
         this.createdBy = createdBy;
     }

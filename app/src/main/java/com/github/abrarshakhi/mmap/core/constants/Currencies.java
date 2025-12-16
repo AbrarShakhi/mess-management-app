@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Currencies {
     private final static List<String> currencies = Arrays.asList(
-        "USD", "EUR", "INR", "BDT"
+        "BDT", "USD", "EUR", "INR"
     );
     public static List<String> asList() {
         return currencies;

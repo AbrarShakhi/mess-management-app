@@ -19,13 +19,22 @@ import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.core.constants.Months;
 import com.github.abrarshakhi.mmap.databinding.ActivityEditCreateMessBinding;
+import com.github.abrarshakhi.mmap.home.domain.model.Mess;
 import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
 import com.github.abrarshakhi.mmap.mess.data.repository.MessRepositoryImpl;
+import com.github.abrarshakhi.mmap.mess.domain.usecase.DeleteMessUseCase;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.FetchMessInfoUseCase;
+import com.github.abrarshakhi.mmap.mess.domain.usecase.ListMessesUseCase;
+import com.github.abrarshakhi.mmap.mess.domain.usecase.SelectMessUseCase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EditCreateMessActivity extends AppCompatActivity {
     private ActivityEditCreateMessBinding binding;
     private EditCreateMessViewModel viewModel;
+    private MessItemAdapter messItemAdapter;
+    private List<Mess> messList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +59,16 @@ public class EditCreateMessActivity extends AppCompatActivity {
                 }
                 var repository = new MessRepositoryImpl(getApplicationContext());
                 var fetchMessInfoUseCase = new FetchMessInfoUseCase(repository);
-                return (T) new EditCreateMessViewModel(fetchMessInfoUseCase);
+                var deleteMessUseCase = new DeleteMessUseCase(repository);
+                var listMessesUseCase = new ListMessesUseCase(repository);
+                var selectMessUseCase = new SelectMessUseCase(repository);
+                return (T) new EditCreateMessViewModel(fetchMessInfoUseCase, deleteMessUseCase, listMessesUseCase, selectMessUseCase);
             }
         }).get(EditCreateMessViewModel.class);
+
+        messList = new ArrayList<>();
+        messItemAdapter = new MessItemAdapter(this, messList, viewModel);
+        binding.lvMessList.setAdapter(messItemAdapter);
 
         binding.btnDeleteMess.setVisibility(View.GONE);
         viewModel.messInfoResult.observe(this, result -> {
@@ -60,6 +76,7 @@ public class EditCreateMessActivity extends AppCompatActivity {
                 binding.tvMessName.setText(result.getMess().getName());
                 binding.tvLocation.setText(result.getMess().getLocation());
                 binding.tvMonth.setText(Months.getMonthName(result.getMess().getMonth()));
+                binding.tvYear.setText(String.valueOf(result.getMess().getYear()));
                 binding.tvCurrency.setText(result.getMess().getCurrency());
 
                 var messMember = result.getMessMember();
@@ -77,7 +94,15 @@ public class EditCreateMessActivity extends AppCompatActivity {
         });
         viewModel.fetchMessInfo();
 
-        // init observer
+        viewModel.listMess.observe(this, result -> {
+            if (result.hasErr()) {
+                Toast.makeText(EditCreateMessActivity.this, result.unwrapErr(), Toast.LENGTH_SHORT).show();
+            } else {
+                messList.clear();
+                messList.addAll(result.unwrap());
+                messItemAdapter.notifyDataSetChanged();
+            }
+        });
         viewModel.listMess();
 
         viewModel.messDeleteResult.observe(this, result -> {
@@ -86,6 +111,15 @@ public class EditCreateMessActivity extends AppCompatActivity {
                 finishAffinity();
             } else {
                 Toast.makeText(getApplicationContext(), result.errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.messSelection.observe(this, result -> {
+            if (result.hasErr()) {
+                Toast.makeText(EditCreateMessActivity.this, result.unwrapErr(), Toast.LENGTH_SHORT).show();
+            } else {
+                startActivity(new Intent(EditCreateMessActivity.this, HomeActivity.class));
+                finishAffinity();
             }
         });
         binding.btnCancel.setOnClickListener(v -> finish());

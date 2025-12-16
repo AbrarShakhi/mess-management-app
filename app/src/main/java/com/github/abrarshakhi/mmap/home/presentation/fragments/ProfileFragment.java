@@ -31,7 +31,7 @@ public class ProfileFragment extends Fragment {
 
     private ProfileViewModel viewModel;
 
-    protected ProfileFragment() {
+    public ProfileFragment() {
     }
 
     @NonNull

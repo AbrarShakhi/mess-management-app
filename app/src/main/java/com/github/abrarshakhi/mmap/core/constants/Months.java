@@ -14,8 +14,8 @@ public class Months {
     }
 
     public static String getMonthName(int index) {
-        if (index < 0 || index > 12) {
-            throw new IllegalArgumentException("Index expected between 1 to 12. Got " + index);
+        if (index < 0 || index > 11) {
+            throw new IllegalArgumentException("Index expected between 0 to 11. Got " + index);
         }
         return months.get(index);
     }

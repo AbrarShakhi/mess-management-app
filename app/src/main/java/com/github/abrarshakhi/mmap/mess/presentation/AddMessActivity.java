@@ -48,8 +48,7 @@ public class AddMessActivity extends AppCompatActivity {
                 if (modelClass.isAssignableFrom(AddMessViewModel.class)) {
                     var repository = new MessRepositoryImpl(getApplicationContext());
                     var useCase = new CreateNewMessUseCase(repository);
-                    var vm = new AddMessViewModel(useCase);
-                    return (T) vm;
+                    return (T) new AddMessViewModel(useCase);
                 }
                 throw new IllegalArgumentException("Unknown ViewModel class");
             }
