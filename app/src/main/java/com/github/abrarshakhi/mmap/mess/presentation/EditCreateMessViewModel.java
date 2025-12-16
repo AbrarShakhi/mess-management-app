@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.github.abrarshakhi.mmap.mess.domain.usecase.FetchMessInfoUseCase;
+import com.github.abrarshakhi.mmap.mess.domain.usecase.result.MessDeleteResult;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.result.MessInfoResult;
 
 import java.util.concurrent.ExecutorService;
@@ -13,6 +14,7 @@ public class EditCreateMessViewModel extends ViewModel {
     private final FetchMessInfoUseCase fetchMessInfoUseCase;
     private final ExecutorService executor;
     public MutableLiveData<MessInfoResult> messInfoResult = new MutableLiveData<>();
+    public MutableLiveData<MessDeleteResult> messDeleteResult = new MutableLiveData<>();
 
     public EditCreateMessViewModel(FetchMessInfoUseCase fetchMessInfoUseCase) {
         this.fetchMessInfoUseCase = fetchMessInfoUseCase;
@@ -30,10 +32,6 @@ public class EditCreateMessViewModel extends ViewModel {
         });
     }
 
-    public void leaveMess() {
-        executor.submit(() -> {
-        });
-    }
     public void deleteMess() {
         executor.submit(() -> {
         });

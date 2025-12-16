@@ -111,11 +111,11 @@
             android:padding="12dp">
 
             <ImageButton
-                android:id="@+id/btnLeftMess"
+                android:id="@+id/btnDeleteMess"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:contentDescription="Leave mess"
-                android:src="@drawable/ic_share"/>
+                android:src="@drawable/ic_delete"/>
 
             <ImageButton
                 android:id="@+id/btnEditMess"

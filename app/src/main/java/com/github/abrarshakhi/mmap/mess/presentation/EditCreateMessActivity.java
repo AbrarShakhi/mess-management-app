@@ -2,6 +2,7 @@ package com.github.abrarshakhi.mmap.mess.presentation;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -18,6 +19,7 @@ import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.core.constants.Months;
 import com.github.abrarshakhi.mmap.databinding.ActivityEditCreateMessBinding;
+import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
 import com.github.abrarshakhi.mmap.mess.data.repository.MessRepositoryImpl;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.FetchMessInfoUseCase;
 
@@ -52,7 +54,7 @@ public class EditCreateMessActivity extends AppCompatActivity {
             }
         }).get(EditCreateMessViewModel.class);
 
-
+        binding.btnDeleteMess.setVisibility(View.GONE);
         viewModel.messInfoResult.observe(this, result -> {
             if (result.isSuccess()) {
                 binding.tvMessName.setText(result.getMess().getName());
@@ -63,12 +65,10 @@ public class EditCreateMessActivity extends AppCompatActivity {
                 var messMember = result.getMessMember();
                 if (messMember.getRole().equals(MessMemberRole.LEFT)) {
                     Toast.makeText(getApplicationContext(), "you left the mess", Toast.LENGTH_SHORT).show();
-                    viewModel.leaveMess();
                     finish();
                 } else if (messMember.getRole().equals(MessMemberRole.ADMIN)) {
-                    binding.btnLeftMess.setOnClickListener(v -> showDeleteMessDialog());
-                } else {
-                    binding.btnLeftMess.setOnClickListener(v -> showLeaveMessDialog());
+                    binding.btnDeleteMess.setOnClickListener(v -> showDeleteMessDialog());
+                    binding.btnDeleteMess.setVisibility(View.VISIBLE);
                 }
 
             } else {
@@ -77,10 +77,19 @@ public class EditCreateMessActivity extends AppCompatActivity {
         });
         viewModel.fetchMessInfo();
 
-        binding.btnCancel.setOnClickListener(v -> finish());
-        binding.btnAddMess.setOnClickListener(v -> {
-            startActivity(new Intent(EditCreateMessActivity.this, AddMessActivity.class));
+        // init observer
+        viewModel.listMess();
+
+        viewModel.messDeleteResult.observe(this, result -> {
+            if (result.isSuccess) {
+                startActivity(new Intent(EditCreateMessActivity.this, HomeActivity.class));
+                finishAffinity();
+            } else {
+                Toast.makeText(getApplicationContext(), result.errorMessage, Toast.LENGTH_SHORT).show();
+            }
         });
+        binding.btnCancel.setOnClickListener(v -> finish());
+        binding.btnAddMess.setOnClickListener(v -> startActivity(new Intent(EditCreateMessActivity.this, AddMessActivity.class)));
     }
 
     @Override
@@ -88,24 +97,11 @@ public class EditCreateMessActivity extends AppCompatActivity {
         super.onStart();
     }
 
-    private void showLeaveMessDialog() {
-        new AlertDialog.Builder(this)
-            .setTitle("Leave Mess")
-            .setMessage("Are you sure you want to leave this mess?")
-            .setPositiveButton("Yes", (d, w) -> {
-                viewModel.leaveMess();
-            })
-            .setNegativeButton("Cancel", null)
-            .show();
-    }
-
     private void showDeleteMessDialog() {
         new AlertDialog.Builder(this)
             .setTitle("Leave Mess")
             .setMessage("Are you sure you want to leave this mess?")
-            .setPositiveButton("Yes", (d, w) -> {
-                viewModel.deleteMess();
-            })
+            .setPositiveButton("Yes", (d, w) -> viewModel.deleteMess())
             .setNegativeButton("Cancel", null)
             .show();
     }
