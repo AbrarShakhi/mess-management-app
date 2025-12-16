@@ -5,10 +5,13 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.databinding.ActivityHomeBinding;
@@ -47,13 +50,20 @@ public class HomeActivity extends AppCompatActivity {
             R.id.flMainFrameLayout,
             getSupportActionBar()
         );
-        viewModel = new FindMessViewModel(
-            new FindMessUserCase(
-                new FindMessRepositoryImpl(
-                    new DataSource(this)
-                )
-            )
-        );
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                if (modelClass.isAssignableFrom(FindMessViewModel.class)) {
+                    var dataSource = new DataSource(getApplicationContext());
+                    var repository = new FindMessRepositoryImpl(dataSource);
+                    var useCase = new FindMessUserCase(repository);
+
+                    return (T) new FindMessViewModel(useCase);
+                }
+                throw new IllegalArgumentException("Unknown ViewModel class");
+            }
+        }).get(FindMessViewModel.class);
 
         viewModel.findMessResult.observe(this, result -> {
             if (result.isSuccess()) {

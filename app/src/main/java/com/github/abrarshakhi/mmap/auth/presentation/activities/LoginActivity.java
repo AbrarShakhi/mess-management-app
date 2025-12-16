@@ -5,10 +5,13 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
@@ -19,6 +22,7 @@ import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.LoginNavigation;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
 import com.github.abrarshakhi.mmap.databinding.ActivityLoginBinding;
+import com.github.abrarshakhi.mmap.home.presentation.viewmodel.ProfileViewModel;
 
 public class LoginActivity extends AppCompatActivity {
     private ActivityLoginBinding binding;
@@ -40,11 +44,20 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        var dataSource = new AuthDataSource(this);
-        var repo = new AuthRepositoryImpl(dataSource);
-        var loginUseCase = new LoginUseCase(repo);
-        var checkIsLoggedIn = new CheckLoginUseCase(repo);
-        viewModel = new LoginViewModel(loginUseCase, checkIsLoggedIn);
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                if (!modelClass.isAssignableFrom(LoginViewModel.class)) {
+                    throw new IllegalArgumentException("Unknown ViewModel class");
+                }
+                var dataSource = new AuthDataSource(getApplicationContext());
+                var repo = new AuthRepositoryImpl(dataSource);
+                var loginUseCase = new LoginUseCase(repo);
+                var checkIsLoggedIn = new CheckLoginUseCase(repo);
+                return (T) new LoginViewModel(loginUseCase, checkIsLoggedIn);
+            }
+        }).get(LoginViewModel.class);
 
         navigation = new LoginNavigation(this);
 
@@ -57,8 +70,8 @@ public class LoginActivity extends AppCompatActivity {
                 User user = result.getUser();
                 if (user != null) {
                     Toast
-                            .makeText(LoginActivity.this, "Logged in as " + user.getFullName(), Toast.LENGTH_SHORT)
-                            .show();
+                        .makeText(LoginActivity.this, "Logged in as " + user.getFullName(), Toast.LENGTH_SHORT)
+                        .show();
                     navigation.toHomeActivity();
                     finishAffinity();
                     return;
@@ -78,15 +91,15 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         binding.tvGoToSignUp.setOnClickListener(v -> {
-                    navigation.toSignupActivity();
-                    finishAffinity();
-                }
+                navigation.toSignupActivity();
+                finishAffinity();
+            }
         );
 
         binding.tvForgotPassword.setOnClickListener(v -> {
-                    navigation.toForgetPasswordActivity();
-                    finishAffinity();
-                }
+                navigation.toForgetPasswordActivity();
+                finishAffinity();
+            }
         );
 
         binding.btnLogin.setOnClickListener(v -> {

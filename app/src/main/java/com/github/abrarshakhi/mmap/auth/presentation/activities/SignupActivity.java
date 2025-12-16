@@ -5,17 +5,23 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
 import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
 import com.github.abrarshakhi.mmap.auth.domain.model.User;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
+import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
 import com.github.abrarshakhi.mmap.auth.domain.usecase.SignupUseCase;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.SignupNavigation;
+import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
 import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.SignupViewModel;
 import com.github.abrarshakhi.mmap.databinding.ActivitySignupBinding;
 
@@ -38,11 +44,21 @@ public class SignupActivity extends AppCompatActivity {
             return insets;
         });
 
-        var datasource = new AuthDataSource(this);
-        var repo = new AuthRepositoryImpl(datasource);
-        var signupUseCase = new SignupUseCase(repo);
-        viewModel = new SignupViewModel(signupUseCase);
         navigation = new SignupNavigation(this);
+
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                if (!modelClass.isAssignableFrom(SignupViewModel.class)) {
+                    throw new IllegalArgumentException("Unknown ViewModel class");
+                }
+                var dataSource = new AuthDataSource(getApplicationContext());
+                var repo = new AuthRepositoryImpl(dataSource);
+                var signupUseCase = new SignupUseCase(repo);
+                return (T) new SignupViewModel(signupUseCase);
+            }
+        }).get(SignupViewModel.class);
 
         // Go to login button
         binding.tvGoToLogin.setOnClickListener(v -> {

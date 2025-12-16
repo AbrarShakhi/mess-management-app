@@ -1,5 +1,6 @@
 package com.github.abrarshakhi.mmap.home.data.repository;
 
+import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.domain.repository.FindMessRepository;
 import com.github.abrarshakhi.mmap.home.domain.usecase.result.FindMessResult;
@@ -25,8 +26,15 @@ public class FindMessRepositoryImpl implements FindMessRepository {
             if (messes.isEmpty()) {
                 return FindMessResult.success(false);
             }
-            ds.saveCurrentMessId(messes.get(0).messId);
-            return FindMessResult.success(true);
+            for (var mess : messes) {
+                for (var mem : ds.getMembers(mess.messId)) {
+                    if (!mem.role.equals(MessMemberRole.LEFT)) {
+                        ds.saveCurrentMessId(messes.get(0).messId);
+                        return FindMessResult.success(true);
+                    }
+                }
+            }
+            return FindMessResult.success(false);
         } catch (ExecutionException ee) {
             if (ee.getCause() instanceof FirebaseNetworkException) {
                 return FindMessResult.failure("No internet connection");

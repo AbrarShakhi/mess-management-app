@@ -62,7 +62,7 @@
                 android:id="@+id/tvMessName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mess Name"
+                android:text=""
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -75,7 +75,7 @@
                     android:id="@+id/tvLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Location" />
+                    android:text="" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -86,7 +86,7 @@
                     android:id="@+id/tvCity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="City" />
+                    android:text="" />
 
             </LinearLayout>
 
@@ -94,13 +94,13 @@
                 android:id="@+id/tvMonth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Month" />
+                android:text="" />
 
             <TextView
                 android:id="@+id/tvCurrency"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Currency" />
+                android:text="" />
         </LinearLayout>
 
         <LinearLayout
@@ -119,6 +119,7 @@
 
             <ImageButton
                 android:id="@+id/btnEditMess"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:contentDescription="Edit mess"

@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.auth.domain.model.User;
 import com.github.abrarshakhi.mmap.auth.presentation.activities.LoginActivity;
@@ -41,12 +43,21 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        var dataSource = new DataSource(requireContext());
-        var repo = new ProfileRepositoryImpl(dataSource);
-        var logoutUseCase = new LogoutUseCase(repo);
-        var fetchUserProfileUseCase = new FetchUserInfoUseCase(repo);
-        viewModel = new ProfileViewModel(logoutUseCase, fetchUserProfileUseCase);
 
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                if (!modelClass.isAssignableFrom(ProfileViewModel.class)) {
+                    throw new IllegalArgumentException("Unknown ViewModel class");
+                }
+                var dataSource = new DataSource(requireContext());
+                var repo = new ProfileRepositoryImpl(dataSource);
+                var logoutUseCase = new LogoutUseCase(repo);
+                var fetchUserProfileUseCase = new FetchUserInfoUseCase(repo);
+                return (T) new ProfileViewModel(logoutUseCase, fetchUserProfileUseCase);
+            }
+        }).get(ProfileViewModel.class);
     }
 
     @Override
@@ -66,9 +77,9 @@ public class ProfileFragment extends Fragment {
                     binding.tvProfileName.setText(user.getFullName());
                     binding.tvEmail.setText(user.getEmail());
                     binding.tvPhone.setText(
-                            (!user.getPhone().isBlank())
-                                    ? user.getPhone()
-                                    : "no phone added");
+                        (!user.getPhone().isBlank())
+                            ? user.getPhone()
+                            : "no phone added");
                 }
             } else {
                 Toast.makeText(requireContext(), result.getErrorMessage(), Toast.LENGTH_SHORT).show();
@@ -94,7 +105,6 @@ public class ProfileFragment extends Fragment {
             startActivity(new Intent(requireActivity(), EditCreateMessActivity.class));
         });
     }
-
 
 
 }

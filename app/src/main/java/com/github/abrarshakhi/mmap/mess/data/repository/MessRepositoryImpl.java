@@ -4,14 +4,19 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.data.dto.MessDto;
 import com.github.abrarshakhi.mmap.home.data.dto.MessMemberDto;
+import com.github.abrarshakhi.mmap.home.data.mapper.MessMapper;
+import com.github.abrarshakhi.mmap.home.data.mapper.MessMemberMapper;
 import com.github.abrarshakhi.mmap.mess.domain.repository.CreateNewMessRepository;
+import com.github.abrarshakhi.mmap.mess.domain.repository.FetchMessInfoRepository;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.request.CreateNewMessRequest;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.result.CreateNewMessResult;
+import com.github.abrarshakhi.mmap.mess.domain.usecase.result.MessInfoResult;
 
-public class MessRepositoryImpl implements CreateNewMessRepository {
+public class MessRepositoryImpl implements CreateNewMessRepository, FetchMessInfoRepository {
 
     private final DataSource dataSource;
 
@@ -36,7 +41,7 @@ public class MessRepositoryImpl implements CreateNewMessRepository {
             MessMemberDto memberDto = new MessMemberDto(
                 currentUserId,
                 createdMess.messId,
-                "ADMIN",
+                MessMemberRole.ADMIN,
                 System.currentTimeMillis()
             );
 
@@ -48,6 +53,26 @@ public class MessRepositoryImpl implements CreateNewMessRepository {
             return CreateNewMessResult.failure(e.getMessage());
         }
 
+    }
+
+    @Override
+    public MessInfoResult fetchMessInfo() {
+        try {
+            var messDto = dataSource.getMess(dataSource.getCurrentMessId());
+            var mess = MessMapper.dtoToDomain(messDto);
+            var userId = dataSource.getLoggedInUser().getUid();
+
+            var messMembersDto = dataSource.getMembers(messDto.messId);
+            for (var messMemberDto : messMembersDto) {
+                if (messMemberDto.userId.equals(userId)) {
+                    var messMember = MessMemberMapper.dtoToDomain(messMemberDto);
+                    return MessInfoResult.success(mess, messMember);
+                }
+            }
+            return MessInfoResult.failure("You are not in the mess");
+        } catch (Exception e) {
+            return MessInfoResult.failure(e.getMessage());
+        }
     }
 }
 

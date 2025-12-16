@@ -12,4 +12,11 @@ public class Months {
     public static List<String> asList() {
         return months;
     }
+
+    public static String getMonthName(int index) {
+        if (index < 0 || index > 12) {
+            throw new IllegalArgumentException("Index expected between 1 to 12. Got " + index);
+        }
+        return months.get(index);
+    }
 }

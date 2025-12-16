@@ -44,6 +44,4 @@ public class UserInfoResult {
     public String getErrorMessage() {
         return errorMessage;
     }
-
-
 }

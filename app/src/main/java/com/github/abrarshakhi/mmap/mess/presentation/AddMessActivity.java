@@ -6,15 +6,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.core.constants.Currencies;
 import com.github.abrarshakhi.mmap.databinding.ActivityAddMessBinding;
-import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
 import com.github.abrarshakhi.mmap.mess.data.repository.MessRepositoryImpl;
 import com.github.abrarshakhi.mmap.mess.domain.usecase.CreateNewMessUseCase;
@@ -39,7 +41,19 @@ public class AddMessActivity extends AppCompatActivity {
             return insets;
         });
 
-        viewModel = new AddMessViewModel(new CreateNewMessUseCase(new MessRepositoryImpl(this)));
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                if (modelClass.isAssignableFrom(AddMessViewModel.class)) {
+                    var repository = new MessRepositoryImpl(getApplicationContext());
+                    var useCase = new CreateNewMessUseCase(repository);
+                    var vm = new AddMessViewModel(useCase);
+                    return (T) vm;
+                }
+                throw new IllegalArgumentException("Unknown ViewModel class");
+            }
+        }).get(AddMessViewModel.class);
 
         List<String> currencies = Currencies.asList();
 
