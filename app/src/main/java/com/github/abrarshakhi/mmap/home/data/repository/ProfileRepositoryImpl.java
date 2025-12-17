@@ -24,7 +24,6 @@ public class ProfileRepositoryImpl implements LogoutRepository, FetchUserReposit
         return LogoutResult.success();
     }
 
-
     @Override
     public UserInfoResult fetchInfo() {
         try {

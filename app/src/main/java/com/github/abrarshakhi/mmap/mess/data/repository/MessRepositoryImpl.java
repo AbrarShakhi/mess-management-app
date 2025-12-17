@@ -110,7 +110,6 @@ public class MessRepositoryImpl implements CreateNewMessRepository, FetchMessInf
     public Outcome<List<Mess>, String> fetchMessList() {
         try {
             var userId = dataSource.getLoggedInUser().getUid();
-            var messId = dataSource.getCurrentMessId();
 
             List<MessDto> messDtoList = dataSource.getMessesForUser(userId);
             List<Mess> messList = new ArrayList<>();
