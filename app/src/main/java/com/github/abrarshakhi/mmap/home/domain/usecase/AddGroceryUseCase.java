@@ -18,25 +18,6 @@ public class AddGroceryUseCase {
         if (items.length != prices.length && items.length != quantities.length) {
             return Outcome.failure("number of items length did not match with quantity, price");
         }
-
-        for (var itm : items) {
-            if (itm.isBlank()) {
-                return Outcome.failure("Item Name can not be empty");
-            }
-        }
-        for (var price : prices) {
-            if (price < 0) {
-                return Outcome.failure("Price uis negative?");
-            }
-        }
-        for (var quantity : quantities) {
-            if (quantity.isBlank()) {
-                return Outcome.failure("Price uis negative?");
-            }
-            if (!quantity.matches("\\d+(\\.\\d+)?[a-zA-Z]+")) {
-                return Outcome.failure("Quantity must be like 1kg, 500g, 2pcs (no spaces)");
-            }
-        }
         return repository.addGrocery(groceryBatch);
     }
 }

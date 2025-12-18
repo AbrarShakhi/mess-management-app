@@ -45,11 +45,11 @@ public final class GroceryMapper {
      * Groups a list of GroceryDto into GroceryBatch objects based on
      * month, year, messId, userId, and timestamp.
      */
-    public static List<GroceryBatch> toDomainGrouped(List<GroceryDto> dtos) {
-        if (dtos == null || dtos.isEmpty()) return Collections.emptyList();
+    public static List<GroceryBatch> toDomainGrouped(List<GroceryDto> groceryDtos) {
+        if (groceryDtos == null || groceryDtos.isEmpty()) return Collections.emptyList();
 
         // Use a Map to group by key: month-year-messId-userId-timestamp
-        Map<String, List<GroceryDto>> grouped = dtos.stream()
+        Map<String, List<GroceryDto>> grouped = groceryDtos.stream()
             .collect(Collectors.groupingBy(dto -> dto.messId + "|" + dto.userId + "|" + dto.month + "|" + dto.year + "|" + dto.timestamp));
 
         List<GroceryBatch> batches = new ArrayList<>();
@@ -69,7 +69,7 @@ public final class GroceryMapper {
                 quantities[i] = dto.quantity;
             }
 
-            GroceryDto first = group.get(0); // take the common properties from the first
+            GroceryDto first = group.get(0);
             GroceryBatch batch = new GroceryBatch(
                 ids,
                 first.messId,

@@ -14,6 +14,9 @@
         android:theme="@style/Base.Theme.MessManagementApp"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".home.presentation.activities.GroceryManageActivity"
+            android:exported="false" />
+        <activity
             android:name=".mess.presentation.AddMessActivity"
             android:exported="false" />
         <activity
