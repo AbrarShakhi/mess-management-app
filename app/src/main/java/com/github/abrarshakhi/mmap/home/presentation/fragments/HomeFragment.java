@@ -11,21 +11,17 @@ import androidx.fragment.app.Fragment;
 import com.github.abrarshakhi.mmap.R;
 
 public class HomeFragment extends Fragment {
-    protected HomeFragment() {
+    public HomeFragment() {
     }
 
     @NonNull
     public static HomeFragment newInstance() {
-        //        Bundle args = new Bundle();
-//        fragment.setArguments(args);
         return new HomeFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
     }
 
     @Override

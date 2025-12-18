@@ -1,20 +1,17 @@
 package com.github.abrarshakhi.mmap.home.domain.usecase;
 
 import com.github.abrarshakhi.mmap.core.utils.Outcome;
-import com.github.abrarshakhi.mmap.home.domain.model.GroceryBatch;
 import com.github.abrarshakhi.mmap.home.domain.model.MonthYear;
 import com.github.abrarshakhi.mmap.home.domain.repository.GroceryRepository;
 
-import java.util.List;
-
-public class ListGroceryBatchUseCase {
+public class FindCurrentMonthYearUseCase {
     public final GroceryRepository repository;
 
-    public ListGroceryBatchUseCase(GroceryRepository repository) {
+    public FindCurrentMonthYearUseCase(GroceryRepository repository) {
         this.repository = repository;
     }
 
-    public Outcome<List<GroceryBatch>, String> execute(MonthYear monthYear) {
-        return repository.listGrocery(monthYear);
+    public Outcome<MonthYear, String> execute() {
+        return repository.findCurrentMonthYear();
     }
 }

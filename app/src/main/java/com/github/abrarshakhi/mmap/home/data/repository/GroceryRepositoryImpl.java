@@ -4,7 +4,10 @@ import com.github.abrarshakhi.mmap.core.utils.Outcome;
 import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.data.mapper.GroceryMapper;
 import com.github.abrarshakhi.mmap.home.domain.model.GroceryBatch;
+import com.github.abrarshakhi.mmap.home.domain.model.MonthYear;
 import com.github.abrarshakhi.mmap.home.domain.repository.GroceryRepository;
+
+import java.util.List;
 
 public class GroceryRepositoryImpl implements GroceryRepository {
     private final DataSource ds;
@@ -44,6 +47,28 @@ public class GroceryRepositoryImpl implements GroceryRepository {
 
             return Outcome.success(true);
 
+        } catch (Exception e) {
+            return Outcome.failure(e.getMessage());
+        }
+    }
+
+    @Override
+    public Outcome<MonthYear, String> findCurrentMonthYear() {
+        try {
+            var mess = ds.getMess(ds.getCurrentMessId());
+            return MonthYear.newValidInstance(mess.month, mess.year);
+        } catch (Exception e) {
+            return Outcome.failure(e.getMessage());
+        }
+    }
+
+    @Override
+    public Outcome<List<GroceryBatch>, String> listGrocery(MonthYear monthYear) {
+        try {
+            var mess = ds.getMess(ds.getCurrentMessId());
+            var groceriesDto = ds.getGroceries(mess.messId, monthYear.getMonth(), monthYear.getYear());
+            var groceries = GroceryMapper.toDomainGrouped(groceriesDto);
+            return Outcome.ok(groceries);
         } catch (Exception e) {
             return Outcome.failure(e.getMessage());
         }

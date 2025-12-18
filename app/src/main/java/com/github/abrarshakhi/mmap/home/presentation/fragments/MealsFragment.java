@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import com.github.abrarshakhi.mmap.R;
 
 public class MealsFragment extends Fragment {
-    protected MealsFragment() {
+    public MealsFragment() {
     }
 
     @NonNull
@@ -24,8 +24,6 @@ public class MealsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
     }
 
     @Override

@@ -13,7 +13,7 @@ import com.github.abrarshakhi.mmap.R;
 
 public class ManagementFragment extends Fragment {
 
-    protected ManagementFragment() {
+    public ManagementFragment() {
     }
 
     @NonNull
@@ -24,8 +24,6 @@ public class ManagementFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
     }
 
     @Override
