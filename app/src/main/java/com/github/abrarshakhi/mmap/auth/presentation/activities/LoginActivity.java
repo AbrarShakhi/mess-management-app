@@ -5,113 +5,150 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
-import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
-import com.github.abrarshakhi.mmap.auth.domain.model.User;
-import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
-import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
+import com.github.abrarshakhi.mmap.auth.data.dto.UserDto;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.LoginNavigation;
-import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
 import com.github.abrarshakhi.mmap.databinding.ActivityLoginBinding;
-import com.github.abrarshakhi.mmap.home.presentation.viewmodel.ProfileViewModel;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
-    private ActivityLoginBinding binding;
 
-    private LoginViewModel viewModel;
+    private ActivityLoginBinding binding;
+    private AuthDataSource authDataSource;
     private LoginNavigation navigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        authDataSource = new AuthDataSource(getApplicationContext());
+        navigation = new LoginNavigation(this);
+        EdgeToEdge.enable(this);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                if (!modelClass.isAssignableFrom(LoginViewModel.class)) {
-                    throw new IllegalArgumentException("Unknown ViewModel class");
-                }
-                var dataSource = new AuthDataSource(getApplicationContext());
-                var repo = new AuthRepositoryImpl(dataSource);
-                var loginUseCase = new LoginUseCase(repo);
-                var checkIsLoggedIn = new CheckLoginUseCase(repo);
-                return (T) new LoginViewModel(loginUseCase, checkIsLoggedIn);
-            }
-        }).get(LoginViewModel.class);
-
-        navigation = new LoginNavigation(this);
-
         binding.llLoading.setVisibility(View.VISIBLE);
         binding.svLogin.setVisibility(View.GONE);
 
-        viewModel.loginResult.observe(this, result -> {
-            if (result.isSuccess()) {
-                binding.etErrorStatus.setVisibility(View.GONE);
-                User user = result.getUser();
-                if (user != null) {
-                    Toast
-                        .makeText(LoginActivity.this, "Logged in as " + user.getFullName(), Toast.LENGTH_SHORT)
-                        .show();
-                    navigation.toHomeActivity();
-                    finishAffinity();
-                    return;
-                }
-            } else {
-                if (!result.getErrorMessage().isBlank()) {
-                    binding.etErrorStatus.setText(result.getErrorMessage());
-                    binding.etErrorStatus.setVisibility(View.VISIBLE);
-                }
-            }
-            if (binding.svLogin.getVisibility() == View.GONE) {
-                binding.svLogin.setVisibility(View.VISIBLE);
-                binding.llLoading.setVisibility(View.GONE);
-            }
-            binding.btnLogin.setVisibility(View.VISIBLE);
-            binding.pbLogin.setVisibility(View.GONE);
-        });
+        checkLoggedIn();
 
         binding.tvGoToSignUp.setOnClickListener(v -> {
-                navigation.toSignupActivity();
-                finishAffinity();
-            }
-        );
+            navigation.toSignupActivity();
+            finishAffinity();
+        });
 
         binding.tvForgotPassword.setOnClickListener(v -> {
-                navigation.toForgetPasswordActivity();
-                finishAffinity();
-            }
-        );
+            navigation.toForgetPasswordActivity();
+            finishAffinity();
+        });
 
         binding.btnLogin.setOnClickListener(v -> {
             binding.btnLogin.setVisibility(View.GONE);
             binding.pbLogin.setVisibility(View.VISIBLE);
-            viewModel.login(binding.editEmail.getText().toString(), binding.editPassword.getText().toString());
+
+            String email = binding.editEmail.getText().toString().trim();
+            String password = binding.editPassword.getText().toString().trim();
+
+            login(email, password);
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        viewModel.isLoggedIn();
+    private void checkLoggedIn() {
+        FirebaseUser currentUser = authDataSource.getLoggedInUser();
+        if (currentUser != null) {
+            if (!currentUser.isEmailVerified()) {
+                showError("Please verify your email");
+                showLoginForm();
+                return;
+            }
+
+            authDataSource.fetchUserProfile(currentUser.getUid(), userDto -> {
+                if (userDto != null) {
+                    Toast.makeText(LoginActivity.this,
+                            "Logged in as " + userDto.fullName,
+                            Toast.LENGTH_SHORT).show();
+                    navigation.toHomeActivity();
+                    finishAffinity();
+                } else {
+                    authDataSource.logout();
+                    showLoginForm();
+                }
+            }, e -> {
+                showError("Failed to fetch user profile: " + e.getMessage());
+                showLoginForm();
+            });
+
+        } else {
+            showLoginForm();
+        }
+    }
+
+    private void login(String email, String password) {
+        authDataSource.login(email, password, authResult -> {
+            FirebaseUser user = authResult.getUser();
+            if (user == null) {
+                showError("Login failed: no user");
+                showLoginForm();
+                return;
+            }
+
+            if (!user.isEmailVerified()) {
+                showError("Please verify your email");
+                showLoginForm();
+                return;
+            }
+
+            // Fetch profile
+            authDataSource.fetchUserProfile(user.getUid(), userDto -> {
+                if (userDto != null) {
+                    Toast.makeText(LoginActivity.this,
+                            "Logged in as " + userDto.fullName,
+                            Toast.LENGTH_SHORT).show();
+                    navigation.toHomeActivity();
+                    finishAffinity();
+                } else {
+                    showError("User profile not found");
+                    authDataSource.logout();
+                    showLoginForm();
+                }
+            }, e -> {
+                showError("Failed to fetch user profile: " + e.getMessage());
+                authDataSource.logout();
+                showLoginForm();
+            });
+
+        }, e -> {
+            showError("Login failed: " + e.getMessage());
+            showLoginForm();
+        });
+    }
+
+    private void showError(String message) {
+        binding.etErrorStatus.setText(message);
+        binding.etErrorStatus.setVisibility(View.VISIBLE);
+        showLoginForm();
+    }
+
+
+    private void showLoginForm() {
+        binding.llLoading.setVisibility(View.GONE);
+        binding.svLogin.setVisibility(View.VISIBLE);
+        binding.btnLogin.setVisibility(View.VISIBLE);
+        binding.pbLogin.setVisibility(View.GONE);
     }
 }

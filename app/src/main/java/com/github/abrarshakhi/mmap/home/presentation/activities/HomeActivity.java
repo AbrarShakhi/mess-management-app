@@ -5,30 +5,23 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.databinding.ActivityHomeBinding;
 import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
-import com.github.abrarshakhi.mmap.home.data.repository.FindMessRepositoryImpl;
-import com.github.abrarshakhi.mmap.home.domain.usecase.FindMessUserCase;
 import com.github.abrarshakhi.mmap.home.presentation.navigations.NavDestination;
 import com.github.abrarshakhi.mmap.home.presentation.navigations.NavigationManager;
-import com.github.abrarshakhi.mmap.home.presentation.viewmodel.FindMessViewModel;
 import com.github.abrarshakhi.mmap.mess.presentation.AddMessActivity;
-import com.github.abrarshakhi.mmap.mess.presentation.EditCreateMessActivity;
 
 public class HomeActivity extends AppCompatActivity {
-    private ActivityHomeBinding binding;
-    private FindMessViewModel viewModel;
 
+    private ActivityHomeBinding binding;
     private NavigationManager navigation;
+    private DataSource dataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,51 +31,57 @@ public class HomeActivity extends AppCompatActivity {
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        dataSource = new DataSource(getApplicationContext());
+
+        // Apply system window insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.home), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         setSupportActionBar(binding.topAppBar);
 
         navigation = new NavigationManager(
-            getSupportFragmentManager(),
-            R.id.flMainFrameLayout,
-            getSupportActionBar()
+                getSupportFragmentManager(),
+                R.id.flMainFrameLayout,
+                getSupportActionBar()
         );
-        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                if (modelClass.isAssignableFrom(FindMessViewModel.class)) {
-                    var dataSource = new DataSource(getApplicationContext());
-                    var repository = new FindMessRepositoryImpl(dataSource);
-                    var useCase = new FindMessUserCase(repository);
 
-                    return (T) new FindMessViewModel(useCase);
-                }
-                throw new IllegalArgumentException("Unknown ViewModel class");
-            }
-        }).get(FindMessViewModel.class);
-
-        viewModel.findMessResult.observe(this, result -> {
-            if (result.isSuccess()) {
-                if (result.isMessFound()) {
-                    navigation.navigate();
-                } else {
-                    startActivity(new Intent(HomeActivity.this, AddMessActivity.class));
-                    finish();
-                }
-            } else {
-                Toast.makeText(HomeActivity.this, result.getErrorMsg(), Toast.LENGTH_LONG).show();
-            }
-        });
-
-        viewModel.findMess();
+        checkUserMess();
 
         binding.bnvMainNavBar.setOnItemSelectedListener(item -> {
             navigation.navigate(NavDestination.fromMenuId(item.getItemId()));
             return true;
         });
+    }
+
+    /**
+     * Check if the current user has a mess, and navigate accordingly.
+     */
+    private void checkUserMess() {
+        String currentMessId = dataSource.getCurrentMessId();
+
+        if (currentMessId != null && !currentMessId.isEmpty()) {
+            dataSource.getMess(currentMessId, messDto -> {
+                if (messDto != null) {
+                    navigation.navigate();
+                } else {
+                    navigateToAddMess();
+                }
+            }, e -> {
+                Toast.makeText(HomeActivity.this,
+                        "Error fetching mess: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+                navigateToAddMess();
+            });
+        } else {
+            navigateToAddMess();
+        }
+    }
+
+    private void navigateToAddMess() {
+        startActivity(new Intent(HomeActivity.this, AddMessActivity.class));
+        finish();
     }
 }

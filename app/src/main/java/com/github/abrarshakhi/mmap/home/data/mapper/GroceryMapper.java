@@ -1,9 +1,14 @@
 package com.github.abrarshakhi.mmap.home.data.mapper;
 
+import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.data.dto.GroceryDto;
 import com.github.abrarshakhi.mmap.home.domain.model.GroceryBatch;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public final class GroceryMapper {
@@ -45,12 +50,11 @@ public final class GroceryMapper {
      * Groups a list of GroceryDto into GroceryBatch objects based on
      * month, year, messId, userId, and timestamp.
      */
-    public static List<GroceryBatch> toDomainGrouped(List<GroceryDto> groceryDtos) {
+    public static List<GroceryBatch> toDomainGrouped(List<GroceryDto> groceryDtos, DataSource ds) throws ExecutionException, InterruptedException {
         if (groceryDtos == null || groceryDtos.isEmpty()) return Collections.emptyList();
 
-        // Use a Map to group by key: month-year-messId-userId-timestamp
         Map<String, List<GroceryDto>> grouped = groceryDtos.stream()
-            .collect(Collectors.groupingBy(dto -> dto.messId + "|" + dto.userId + "|" + dto.month + "|" + dto.year + "|" + dto.timestamp));
+                .collect(Collectors.groupingBy(dto -> dto.messId + "|" + dto.userId + "|" + dto.month + "|" + dto.year + "|" + dto.timestamp));
 
         List<GroceryBatch> batches = new ArrayList<>();
 
@@ -71,17 +75,17 @@ public final class GroceryMapper {
 
             GroceryDto first = group.get(0);
             GroceryBatch batch = new GroceryBatch(
-                ids,
-                first.messId,
-                first.userId,
-                itemNames,
-                prices,
-                quantities,
-                first.month,
-                first.year,
-                first.timestamp
+                    ids,
+                    first.messId,
+                    first.userId,
+                    itemNames,
+                    prices,
+                    quantities,
+                    first.month,
+                    first.year,
+                    first.timestamp
             );
-
+            batch.userName = ds.fetchUserProfile(first.userId).getResult().fullName;
             batches.add(batch);
         }
 

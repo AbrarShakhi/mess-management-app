@@ -5,30 +5,26 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.auth.data.datasourse.AuthDataSource;
-import com.github.abrarshakhi.mmap.auth.data.repository.AuthRepositoryImpl;
-import com.github.abrarshakhi.mmap.auth.domain.model.User;
-import com.github.abrarshakhi.mmap.auth.domain.usecase.CheckLoginUseCase;
-import com.github.abrarshakhi.mmap.auth.domain.usecase.LoginUseCase;
-import com.github.abrarshakhi.mmap.auth.domain.usecase.SignupUseCase;
+import com.github.abrarshakhi.mmap.auth.data.dto.UserDto;
 import com.github.abrarshakhi.mmap.auth.presentation.navigations.SignupNavigation;
-import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.LoginViewModel;
-import com.github.abrarshakhi.mmap.auth.presentation.viewmodels.SignupViewModel;
 import com.github.abrarshakhi.mmap.databinding.ActivitySignupBinding;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseUser;
 
 public class SignupActivity extends AppCompatActivity {
-    SignupViewModel viewModel;
-    SignupNavigation navigation;
+
     private ActivitySignupBinding binding;
+    private AuthDataSource authDataSource;
+    private SignupNavigation navigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,65 +34,83 @@ public class SignupActivity extends AppCompatActivity {
         binding = ActivitySignupBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        authDataSource = new AuthDataSource(getApplicationContext());
+        navigation = new SignupNavigation(this);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.signup), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        navigation = new SignupNavigation(this);
-
-        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                if (!modelClass.isAssignableFrom(SignupViewModel.class)) {
-                    throw new IllegalArgumentException("Unknown ViewModel class");
-                }
-                var dataSource = new AuthDataSource(getApplicationContext());
-                var repo = new AuthRepositoryImpl(dataSource);
-                var signupUseCase = new SignupUseCase(repo);
-                return (T) new SignupViewModel(signupUseCase);
-            }
-        }).get(SignupViewModel.class);
-
-        // Go to login button
+        // Go to login
         binding.tvGoToLogin.setOnClickListener(v -> {
-                navigation.toLoginActivity();
-                finishAffinity();
-            }
-        );
+            navigation.toLoginActivity();
+            finishAffinity();
+        });
 
         // Signup button
         binding.btnSignup.setOnClickListener(v -> {
             binding.pbSignup.setVisibility(View.VISIBLE);
             binding.btnSignup.setVisibility(View.GONE);
-            viewModel.signup(
-                binding.etFullNameSignup.getText().toString(),
-                binding.etPhoneSignup.getText().toString(),
-                binding.etEmailSignup.getText().toString(),
-                binding.etPasswordSignup.getText().toString(),
-                binding.etConfirmPasswordSignup.getText().toString()
-            );
+
+            String fullName = binding.etFullNameSignup.getText().toString().trim();
+            String phone = binding.etPhoneSignup.getText().toString().trim();
+            String email = binding.etEmailSignup.getText().toString().trim();
+            String password = binding.etPasswordSignup.getText().toString();
+            String confirmPassword = binding.etConfirmPasswordSignup.getText().toString();
+
+            String validationError = validateInputs(fullName, phone, email, password, confirmPassword);
+            if (validationError != null) {
+                showError(validationError);
+                return;
+            }
+
+            signup(fullName, phone, email, password);
         });
-        viewModel.signupResult.observe(this, (result) -> {
-            if (result.isSuccess()) {
-                binding.etErrorStatusSignUp.setVisibility(View.GONE);
-                User user = result.getUser();
-                if (user != null) {
-                    Toast
-                        .makeText(SignupActivity.this, "Sent a link to your email: " + user.getFullName(), Toast.LENGTH_SHORT)
-                        .show();
+    }
+
+    private void signup(String fullName, String phone, String email, String password) {
+        authDataSource.signup(email, password, authResult -> {
+            FirebaseUser user = authResult.getUser();
+            if (user == null) {
+                showError("Signup failed: no user created");
+                return;
+            }
+
+            // Send email verification
+            authDataSource.sendEmailVerification(user, unused -> {
+                Toast.makeText(SignupActivity.this,
+                        "Verification email sent to " + email,
+                        Toast.LENGTH_LONG).show();
+
+                // Save user profile
+                UserDto userDto = new UserDto(fullName, email, phone);
+                authDataSource.saveUserProfile(user.getUid(), userDto, unused1 -> {
                     navigation.toLoginActivity();
                     finishAffinity();
-                    return;
-                }
-            } else {
-                binding.etErrorStatusSignUp.setText(result.getErrorMessage());
-                binding.etErrorStatusSignUp.setVisibility(View.VISIBLE);
-            }
-            binding.pbSignup.setVisibility(View.GONE);
-            binding.btnSignup.setVisibility(View.VISIBLE);
-        });
+                }, e -> {
+                    showError("Failed to save user profile: " + e.getMessage());
+                });
+
+            }, e -> showError("Failed to send verification email: " + e.getMessage()));
+
+        }, e -> showError("Signup failed: " + e.getMessage()));
+    }
+
+    private String validateInputs(String fullName, String phone, String email, String password, String confirmPassword) {
+        if (fullName.isEmpty()) return "Full name cannot be empty";
+        if (email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) return "Invalid email address";
+        if (password.isEmpty()) return "Password cannot be empty";
+        if (!password.equals(confirmPassword)) return "Passwords do not match";
+        if (!phone.isEmpty() && !phone.matches("^(?:\\+?88)?01[3-9]\\d{8}$")) return "Invalid Bangladeshi phone number format";
+        return null;
+    }
+
+    private void showError(String message) {
+        binding.etErrorStatusSignUp.setText(message);
+        binding.etErrorStatusSignUp.setVisibility(View.VISIBLE);
+        binding.pbSignup.setVisibility(View.GONE);
+        binding.btnSignup.setVisibility(View.VISIBLE);
     }
 }

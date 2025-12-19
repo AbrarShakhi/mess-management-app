@@ -11,21 +11,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.github.abrarshakhi.mmap.R;
 import com.github.abrarshakhi.mmap.core.constants.Currencies;
 import com.github.abrarshakhi.mmap.databinding.ActivityAddMessBinding;
+import com.github.abrarshakhi.mmap.home.data.datasourse.DataSource;
 import com.github.abrarshakhi.mmap.home.presentation.activities.HomeActivity;
-import com.github.abrarshakhi.mmap.mess.data.repository.MessRepositoryImpl;
-import com.github.abrarshakhi.mmap.mess.domain.usecase.CreateNewMessUseCase;
+import com.github.abrarshakhi.mmap.home.data.dto.MessDto;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
 
 public class AddMessActivity extends AppCompatActivity {
+
     private ActivityAddMessBinding binding;
-    private AddMessViewModel viewModel;
+    private DataSource dataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,44 +42,51 @@ public class AddMessActivity extends AppCompatActivity {
             return insets;
         });
 
-        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                if (modelClass.isAssignableFrom(AddMessViewModel.class)) {
-                    var repository = new MessRepositoryImpl(getApplicationContext());
-                    var useCase = new CreateNewMessUseCase(repository);
-                    return (T) new AddMessViewModel(useCase);
-                }
-                throw new IllegalArgumentException("Unknown ViewModel class");
-            }
-        }).get(AddMessViewModel.class);
+        dataSource = new DataSource(getApplicationContext());
 
+        // Setup currency spinner
         List<String> currencies = Currencies.asList();
-
         ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_spinner_item,
-            currencies
+                this,
+                android.R.layout.simple_spinner_item,
+                currencies
         );
         currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spCurrency.setAdapter(currencyAdapter);
 
         binding.btnCancel.setOnClickListener(v -> finish());
-        binding.btnAddMess.setOnClickListener(v -> {
-            viewModel.createMess(
-                binding.etName.getText().toString(),
-                binding.etLocation.getText().toString(),
-                binding.etCity.getText().toString(),
-                binding.spCurrency.getSelectedItem().toString()
-            );
-        });
-        viewModel.createNewMessResult.observe(this, result -> {
-            if (result.isSuccess()) {
+
+        binding.btnAddMess.setOnClickListener(v -> createMess());
+    }
+
+    private void createMess() {
+        String name = binding.etName.getText().toString().trim();
+        String location = binding.etLocation.getText().toString().trim();
+        String city = binding.etCity.getText().toString().trim();
+        String currency = binding.spCurrency.getSelectedItem().toString();
+
+        if (name.isEmpty() || location.isEmpty() || city.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        MessDto messDto = new MessDto();
+        messDto.name = name;
+        messDto.location = location;
+        messDto.city = city;
+        messDto.currency = currency;
+
+        dataSource.createMess(messDto, new OnSuccessListener<MessDto>() {
+            @Override
+            public void onSuccess(MessDto result) {
+                Toast.makeText(AddMessActivity.this, "Mess created successfully", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(AddMessActivity.this, HomeActivity.class));
                 finish();
-            } else {
-                Toast.makeText(AddMessActivity.this, result.getErrorMsg(), Toast.LENGTH_SHORT).show();
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(AddMessActivity.this, "Failed to create mess: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

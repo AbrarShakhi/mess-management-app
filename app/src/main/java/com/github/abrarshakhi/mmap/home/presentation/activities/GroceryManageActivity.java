@@ -51,7 +51,7 @@ public class GroceryManageActivity extends AppCompatActivity {
             @NonNull
             @Override
             public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                if (modelClass.isAssignableFrom(FindMessViewModel.class)) {
+                if (modelClass.isAssignableFrom(GroceryManageViewModel.class)) {
                     var dataSource = new DataSource(GroceryManageActivity.this);
                     var repository = new GroceryRepositoryImpl(dataSource);
                     var addGroceryUseCase = new AddGroceryUseCase(repository);
@@ -65,6 +65,7 @@ public class GroceryManageActivity extends AppCompatActivity {
 
         addedItems = new ArrayList<>();
         adapter = new addedGroceriesItemAdapter(this, addedItems);
+        binding.lvGroceries.setAdapter(adapter);
         binding.btnCancel.setOnClickListener(v -> finish());
         binding.btnDone.setOnClickListener(v -> {
             viewModel.addGrocery(addedItems);
@@ -72,6 +73,7 @@ public class GroceryManageActivity extends AppCompatActivity {
         viewModel.addGroceryOutcome.observe(this, (result) -> {
             if (result.isOK()) {
                 Toast.makeText(GroceryManageActivity.this, "Added", Toast.LENGTH_SHORT).show();
+                finish();
             } else {
                 Toast.makeText(GroceryManageActivity.this, result.unwrapErr(), Toast.LENGTH_SHORT).show();
             }
@@ -80,6 +82,11 @@ public class GroceryManageActivity extends AppCompatActivity {
             if (result.isOK()) {
                 addedItems.add(result.unwrap());
                 adapter.notifyDataSetChanged();
+                binding.etItemName.setText("");
+                binding.etPrice.setText("");
+                binding.etQuantity.setText("");
+            }  else {
+                Toast.makeText(GroceryManageActivity.this, result.unwrapErr(), Toast.LENGTH_SHORT).show();
             }
         });
         binding.btnAdd.setOnClickListener(v -> {

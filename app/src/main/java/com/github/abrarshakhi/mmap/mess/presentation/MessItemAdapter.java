@@ -12,20 +12,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.home.domain.model.Mess;
+import com.github.abrarshakhi.mmap.home.data.dto.MessDto;
 
 import java.util.List;
 
-public class MessItemAdapter extends ArrayAdapter<Mess> {
+public class MessItemAdapter extends ArrayAdapter<MessDto> {
     private final Context context;
-    private final List<Mess> items;
-    private final EditCreateMessViewModel viewModel;
+    private final List<MessDto> items;
+    private final OnMessClickListener clickListener;
 
-    public MessItemAdapter(@NonNull Context context, @NonNull List<Mess> items, EditCreateMessViewModel viewModel) {
+    public interface OnMessClickListener {
+        void onClick(MessDto mess);
+    }
+
+    public MessItemAdapter(@NonNull Context context, @NonNull List<MessDto> items, @NonNull OnMessClickListener listener) {
         super(context, R.layout.mess_item, items);
         this.context = context;
         this.items = items;
-        this.viewModel = viewModel;
+        this.clickListener = listener;
     }
 
     @NonNull
@@ -49,12 +53,13 @@ public class MessItemAdapter extends ArrayAdapter<Mess> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Mess mess = items.get(position);
+        MessDto mess = items.get(position);
 
-        holder.tvMessName.setText(mess.getName());
-        holder.tvMessLocation.setText(mess.getLocation());
-        holder.tvMessCity.setText(mess.getCity());
-        holder.llIdItemCard.setOnClickListener(v -> viewModel.selectMess(mess));
+        holder.tvMessName.setText(mess.name);
+        holder.tvMessLocation.setText(mess.location);
+        holder.tvMessCity.setText(mess.city);
+
+        holder.llIdItemCard.setOnClickListener(v -> clickListener.onClick(mess));
 
         return convertView;
     }

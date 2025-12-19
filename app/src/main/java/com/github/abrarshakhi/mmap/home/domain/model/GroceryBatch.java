@@ -11,6 +11,7 @@ public final class GroceryBatch {
     private int month;
     private int year;
     private String[] ids;
+    public String userName;
 
     public GroceryBatch(String[] itemNames, float[] prices, String[] quantities) {
         this.itemNames = itemNames;
