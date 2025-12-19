@@ -15,25 +15,25 @@
         android:theme="@style/Base.Theme.MessManagementApp"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".home.presentation.activities.GroceryManageActivity"
+            android:name=".presentation.activities.GroceryManageActivity"
             android:exported="false" />
         <activity
-            android:name=".mess.presentation.AddMessActivity"
+            android:name=".presentation.activities.AddMessActivity"
             android:exported="false" />
         <activity
-            android:name=".mess.presentation.EditCreateMessActivity"
+            android:name=".presentation.activities.EditCreateMessActivity"
             android:exported="false" />
         <activity
-            android:name=".home.presentation.activities.HomeActivity"
+            android:name=".presentation.activities.HomeActivity"
             android:exported="true" />
         <activity
-            android:name=".auth.presentation.activities.ForgetPasswordActivity"
+            android:name=".presentation.activities.ForgetPasswordActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.presentation.activities.SignupActivity"
+            android:name=".presentation.activities.SignupActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.presentation.activities.LoginActivity"
+            android:name=".presentation.activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

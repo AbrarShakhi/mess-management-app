@@ -4,7 +4,7 @@
     android:id="@+id/login"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".auth.presentation.activities.LoginActivity"
+    tools:context=".presentation.activities.LoginActivity"
     tools:ignore="HardcodedText,RtlHardcoded">
 
     <LinearLayout
