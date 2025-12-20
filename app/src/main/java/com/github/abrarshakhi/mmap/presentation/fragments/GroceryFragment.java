@@ -19,11 +19,11 @@ import com.github.abrarshakhi.mmap.domain.model.GroceryBatch;
 import com.github.abrarshakhi.mmap.domain.model.MonthYear;
 import com.github.abrarshakhi.mmap.presentation.activities.GroceryManageActivity;
 import com.github.abrarshakhi.mmap.presentation.adapters.GroceryItemAdapter;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class GroceryFragment extends Fragment {
@@ -35,6 +35,7 @@ public class GroceryFragment extends Fragment {
     private GroceryItemAdapter adapter;
     private String messCurrency = "BDT";
     private MonthYear monthYear;
+    private ListenerRegistration groceryListener;
 
     public GroceryFragment() {
     }
@@ -63,46 +64,60 @@ public class GroceryFragment extends Fragment {
         binding.lvGroceryItem.setAdapter(adapter);
         fetchMonthYearThenLoad();
 
-        binding.btnAddGrocery.setOnClickListener(v ->
-            startActivity(new Intent(requireActivity(), GroceryManageActivity.class)));
+        binding.btnAddGrocery.setOnClickListener(v -> {
+                    if (monthYear != null) {
+                        startActivity(
+                                new Intent(requireActivity(), GroceryManageActivity.class)
+                                        .putExtra("M", monthYear.getMonth())
+                                        .putExtra("Y", monthYear.getYear())
+                        );
+                    }
+                }
+        );
 
         binding.ivArrowLeft.setOnClickListener(v -> {
             monthYear = monthYear.previous();
-            loadGroceries();
+            loadGroceriesRealtime();
         });
 
         binding.ivArrowRight.setOnClickListener(v -> {
             monthYear = monthYear.next();
-            loadGroceries();
+            loadGroceriesRealtime();
         });
     }
 
-    private void loadGroceries() {
+    private void loadGroceriesRealtime() {
         String messId = dataSource.getCurrentMessId();
 
-        dataSource.getGroceries(
-            messId,
-            monthYear.getMonth(), monthYear.getYear(),
-            this::onGroceriesLoaded,
-            e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
+        if (groceryListener != null) {
+            groceryListener.remove();
+        }
+
+        groceryListener = dataSource.listenGroceriesRealtime(
+                messId,
+                monthYear.getMonth(),
+                monthYear.getYear(),
+                this::onGroceriesLoaded,
+                e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
         );
     }
+
 
     private void fetchMonthYearThenLoad() {
         String messId = dataSource.getCurrentMessId();
 
         dataSource.getCurrentMonthYearFromMess(
-            messId,
-            my -> {
-                monthYear = my;
-                binding.tvMonthYear.setText(monthYear.toString());
-                prepareCaches();
-            },
-            e -> Toast.makeText(
-                requireContext(),
-                e.getMessage(),
-                Toast.LENGTH_SHORT
-            ).show()
+                messId,
+                my -> {
+                    monthYear = my;
+                    binding.tvMonthYear.setText(monthYear.toString());
+                    prepareCaches();
+                },
+                e -> Toast.makeText(
+                        requireContext(),
+                        e.getMessage(),
+                        Toast.LENGTH_SHORT
+                ).show()
         );
     }
 
@@ -130,14 +145,26 @@ public class GroceryFragment extends Fragment {
                 for (var member : mess.members) {
                     dataSource.fetchUserProfile(member.userId, user -> {
                         userNameMap.put(member.userId, user.fullName);
+                        loadGroceriesRealtime();
+                        adapter.notifyDataSetChanged();
                     }, e -> {
                         userNameMap.put(member.userId, "Unknown");
                     });
                 }
             }
-            loadGroceries();
-        }, e -> {
-        });
+            loadGroceriesRealtime();
+            adapter.notifyDataSetChanged();
+        }, e -> loadGroceriesRealtime());
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (groceryListener != null) {
+            groceryListener.remove();
+            groceryListener = null;
+        }
+        binding = null;
     }
 
 }

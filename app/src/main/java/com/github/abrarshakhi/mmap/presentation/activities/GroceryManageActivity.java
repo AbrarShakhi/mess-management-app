@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -15,9 +14,8 @@ import com.github.abrarshakhi.mmap.data.datasourse.HomeDataSource;
 import com.github.abrarshakhi.mmap.data.dto.AddedItemDto;
 import com.github.abrarshakhi.mmap.data.dto.GroceryBatchDto;
 import com.github.abrarshakhi.mmap.databinding.ActivityGroceryManageBinding;
+import com.github.abrarshakhi.mmap.domain.model.MonthYear;
 import com.github.abrarshakhi.mmap.presentation.adapters.addedGroceriesItemAdapter;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ public class GroceryManageActivity extends AppCompatActivity {
     private addedGroceriesItemAdapter adapter;
     private List<AddedItemDto> addedItemDtos;
     private HomeDataSource dataSource;
+    private MonthYear my;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +42,16 @@ public class GroceryManageActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        var intent = getIntent();
+        if (intent == null) {
+            Toast.makeText(this, "Required intent", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        my = MonthYear.newValidInstance(
+                intent.getIntExtra("M", -1),
+                intent.getIntExtra("Y", -1)
+        ).unwrap();
 
         dataSource = new HomeDataSource(this);
         addedItemDtos = new ArrayList<>();
@@ -101,29 +110,20 @@ public class GroceryManageActivity extends AppCompatActivity {
                 Toast.makeText(this, "No current mess selected", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             GroceryBatchDto batch = new GroceryBatchDto();
             batch.messId = messId;
             batch.userId = user.getUid();
             batch.items = new ArrayList<>(addedItemDtos);
             batch.timestamp = System.currentTimeMillis();
-            batch.month = java.time.LocalDate.now().getMonthValue();
-            batch.year = java.time.LocalDate.now().getYear();
+            batch.month = my.getMonth();
+            batch.year = my.getYear();
 
             dataSource.addGrocery(batch,
-                new OnSuccessListener<GroceryBatchDto>() {
-                    @Override
-                    public void onSuccess(GroceryBatchDto dto) {
+                    dto -> {
                         Toast.makeText(GroceryManageActivity.this, "Grocery batch added!", Toast.LENGTH_SHORT).show();
                         finish();
-                    }
-                },
-                new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(GroceryManageActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    },
+                    e -> Toast.makeText(GroceryManageActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
     }
 }

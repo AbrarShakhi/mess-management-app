@@ -10,6 +10,7 @@ import com.github.abrarshakhi.mmap.data.dto.MessDto;
 import com.github.abrarshakhi.mmap.domain.model.MonthYear;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.Source;
 
@@ -133,6 +134,34 @@ public class HomeDataSource extends AuthDataSource {
                     .addOnFailureListener(failure)
             );
     }
+
+    public ListenerRegistration listenGroceriesRealtime(
+            String messId,
+            int month,
+            int year,
+            OnSuccessListener<List<GroceryBatchDto>> success,
+            OnFailureListener failure
+    ) {
+        Query query = db.collection("mess")
+                .document(messId)
+                .collection("grocery_batches")
+                .whereEqualTo("month", month)
+                .whereEqualTo("year", year);
+
+        return query.addSnapshotListener((snap, e) -> {
+            if (e != null) {
+                failure.onFailure(e);
+                return;
+            }
+
+            if (snap != null) {
+                List<GroceryBatchDto> list = new ArrayList<>();
+                snap.forEach(d -> list.add(d.toObject(GroceryBatchDto.class)));
+                success.onSuccess(list);
+            }
+        });
+    }
+
 
     public void getMessesForUser(
         @NonNull String userId,

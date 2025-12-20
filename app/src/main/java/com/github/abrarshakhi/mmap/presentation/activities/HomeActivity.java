@@ -11,8 +11,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.github.abrarshakhi.mmap.R;
-import com.github.abrarshakhi.mmap.databinding.ActivityHomeBinding;
+import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.data.datasourse.HomeDataSource;
+import com.github.abrarshakhi.mmap.databinding.ActivityHomeBinding;
 import com.github.abrarshakhi.mmap.presentation.navigations.NavDestination;
 import com.github.abrarshakhi.mmap.presentation.navigations.NavigationManager;
 
@@ -75,8 +76,23 @@ public class HomeActivity extends AppCompatActivity {
                 navigateToAddMess();
             });
         } else {
-            navigateToAddMess();
+            setAnyJoinedMess();
         }
+    }
+
+    private void setAnyJoinedMess() {
+        var loggedInUserId = homeDataSource.getLoggedInUser().getUid();
+        homeDataSource.getMessesForUser(loggedInUserId, result -> {
+            for (var messDto : result) {
+                for (var member : messDto.members) {
+                    if (member.userId.equals(loggedInUserId) && !member.role.equals(MessMemberRole.LEFT)) {
+                        navigation.navigate();
+                        return;
+                    }
+                }
+            }
+            navigateToAddMess();
+        }, e -> navigateToAddMess());
     }
 
     private void navigateToAddMess() {
