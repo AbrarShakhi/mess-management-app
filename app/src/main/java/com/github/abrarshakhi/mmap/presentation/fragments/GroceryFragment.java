@@ -65,14 +65,14 @@ public class GroceryFragment extends Fragment {
         fetchMonthYearThenLoad();
 
         binding.btnAddGrocery.setOnClickListener(v -> {
-                    if (monthYear != null) {
-                        startActivity(
-                                new Intent(requireActivity(), GroceryManageActivity.class)
-                                        .putExtra("M", monthYear.getMonth())
-                                        .putExtra("Y", monthYear.getYear())
-                        );
-                    }
+                if (monthYear != null) {
+                    startActivity(
+                        new Intent(requireActivity(), GroceryManageActivity.class)
+                            .putExtra("M", monthYear.getMonth())
+                            .putExtra("Y", monthYear.getYear())
+                    );
                 }
+            }
         );
 
         binding.ivArrowLeft.setOnClickListener(v -> {
@@ -94,11 +94,11 @@ public class GroceryFragment extends Fragment {
         }
 
         groceryListener = dataSource.listenGroceriesRealtime(
-                messId,
-                monthYear.getMonth(),
-                monthYear.getYear(),
-                this::onGroceriesLoaded,
-                e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
+            messId,
+            monthYear.getMonth(),
+            monthYear.getYear(),
+            this::onGroceriesLoaded,
+            e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
         );
     }
 
@@ -107,17 +107,17 @@ public class GroceryFragment extends Fragment {
         String messId = dataSource.getCurrentMessId();
 
         dataSource.getCurrentMonthYearFromMess(
-                messId,
-                my -> {
-                    monthYear = my;
-                    binding.tvMonthYear.setText(monthYear.toString());
-                    prepareCaches();
-                },
-                e -> Toast.makeText(
-                        requireContext(),
-                        e.getMessage(),
-                        Toast.LENGTH_SHORT
-                ).show()
+            messId,
+            my -> {
+                monthYear = my;
+                binding.tvMonthYear.setText(monthYear.toString());
+                prepareCaches();
+            },
+            e -> Toast.makeText(
+                requireContext(),
+                e.getMessage(),
+                Toast.LENGTH_SHORT
+            ).show()
         );
     }
 
@@ -125,6 +125,7 @@ public class GroceryFragment extends Fragment {
     private void onGroceriesLoaded(List<GroceryBatchDto> dtos) {
         list.clear();
         float total = 0f;
+        dtos.sort((left, right) -> Long.compare(right.timestamp, left.timestamp));
 
         for (GroceryBatchDto dto : dtos) {
             GroceryBatch batch = GroceryMapper.toUi(dto, userNameMap.getOrDefault(dto.userId, "Unknown"), messCurrency);

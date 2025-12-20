@@ -10,6 +10,7 @@ import com.github.abrarshakhi.mmap.data.dto.MessDto;
 import com.github.abrarshakhi.mmap.domain.model.MonthYear;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.Source;
@@ -103,6 +104,37 @@ public class HomeDataSource extends AuthDataSource {
             .addOnSuccessListener(v -> success.onSuccess(dto))
             .addOnFailureListener(failure);
     }
+
+    public ListenerRegistration addGroceryOfflineFirst(
+        @NonNull GroceryBatchDto dto,
+        OnSuccessListener<GroceryBatchDto> localSuccess,
+        OnSuccessListener<GroceryBatchDto> serverSuccess,
+        OnFailureListener failure
+    ) {
+        DocumentReference ref = db.collection("mess")
+            .document(dto.messId)
+            .collection("grocery_batches")
+            .document();
+
+        dto.batchId = ref.getId();
+
+        // Write (works offline)
+        ref.set(dto).addOnFailureListener(failure);
+
+        // Listen to local + server state
+        return ref.addSnapshotListener((snap, e) -> {
+            if (e != null || snap == null) return;
+
+            if (snap.getMetadata().hasPendingWrites()) {
+                // ✅ Offline / local success
+                localSuccess.onSuccess(dto);
+            } else {
+                // ✅ Synced with server
+                serverSuccess.onSuccess(dto);
+            }
+        });
+    }
+
 
 
     public void getGroceries(

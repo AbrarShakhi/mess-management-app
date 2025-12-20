@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class GroceryManageActivity extends AppCompatActivity {
 
@@ -48,10 +49,7 @@ public class GroceryManageActivity extends AppCompatActivity {
             Toast.makeText(this, "Required intent", Toast.LENGTH_SHORT).show();
             return;
         }
-        my = MonthYear.newValidInstance(
-                intent.getIntExtra("M", -1),
-                intent.getIntExtra("Y", -1)
-        ).unwrap();
+        my = MonthYear.newValidInstance(intent.getIntExtra("M", -1), intent.getIntExtra("Y", -1)).unwrap();
 
         dataSource = new HomeDataSource(this);
         addedItemDtos = new ArrayList<>();
@@ -118,12 +116,11 @@ public class GroceryManageActivity extends AppCompatActivity {
             batch.month = my.getMonth();
             batch.year = my.getYear();
 
-            dataSource.addGrocery(batch,
-                    dto -> {
-                        Toast.makeText(GroceryManageActivity.this, "Grocery batch added!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    },
-                    e -> Toast.makeText(GroceryManageActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            dataSource.addGroceryOfflineFirst(batch, dto -> {
+                Toast.makeText(GroceryManageActivity.this, "Grocery batch added!", Toast.LENGTH_SHORT).show();
+                finish();
+            }, dto -> {
+            }, e -> Toast.makeText(GroceryManageActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
     }
 }

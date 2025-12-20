@@ -49,7 +49,10 @@ public class addedGroceriesItemAdapter extends ArrayAdapter<AddedItemDto> {
         holder.tvItemName.setText(item.itemName);
         holder.tvItemPrice.setText(String.valueOf(item.price));
         holder.tvItemQuantity.setText(item.quantity);
-
+        holder.btnDeleteItem.setOnClickListener(v->{
+            items.remove(position);
+            notifyDataSetChanged();
+        });
         return convertView;
     }
 
