@@ -15,17 +15,16 @@ import com.github.abrarshakhi.mmap.data.dto.AddedItemDto;
 import com.github.abrarshakhi.mmap.data.dto.GroceryBatchDto;
 import com.github.abrarshakhi.mmap.databinding.ActivityGroceryManageBinding;
 import com.github.abrarshakhi.mmap.domain.model.MonthYear;
-import com.github.abrarshakhi.mmap.presentation.adapters.addedGroceriesItemAdapter;
+import com.github.abrarshakhi.mmap.presentation.adapters.AddedGroceriesItemAdapter;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class GroceryManageActivity extends AppCompatActivity {
 
     private ActivityGroceryManageBinding binding;
-    private addedGroceriesItemAdapter adapter;
+    private AddedGroceriesItemAdapter adapter;
     private List<AddedItemDto> addedItemDtos;
     private HomeDataSource dataSource;
     private MonthYear my;
@@ -53,7 +52,7 @@ public class GroceryManageActivity extends AppCompatActivity {
 
         dataSource = new HomeDataSource(this);
         addedItemDtos = new ArrayList<>();
-        adapter = new addedGroceriesItemAdapter(this, addedItemDtos);
+        adapter = new AddedGroceriesItemAdapter(this, addedItemDtos);
         binding.lvGroceries.setAdapter(adapter);
 
         // Cancel button

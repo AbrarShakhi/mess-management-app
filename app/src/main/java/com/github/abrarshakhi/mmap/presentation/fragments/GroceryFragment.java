@@ -59,7 +59,7 @@ public class GroceryFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
+        super.onViewCreated(view, savedInstanceState);
         adapter = new GroceryItemAdapter(requireContext(), list);
         binding.lvGroceryItem.setAdapter(adapter);
         fetchMonthYearThenLoad();
@@ -123,6 +123,9 @@ public class GroceryFragment extends Fragment {
 
 
     private void onGroceriesLoaded(List<GroceryBatchDto> dtos) {
+        if (dtos == null) {
+            return;
+        }
         list.clear();
         float total = 0f;
         dtos.sort((left, right) -> Long.compare(right.timestamp, left.timestamp));
@@ -166,6 +169,7 @@ public class GroceryFragment extends Fragment {
             groceryListener = null;
         }
         binding = null;
+        dataSource = null;
     }
 
 }

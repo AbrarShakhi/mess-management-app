@@ -4,9 +4,11 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.core.utils.Outcome;
 import com.github.abrarshakhi.mmap.data.dto.GroceryBatchDto;
 import com.github.abrarshakhi.mmap.data.dto.MessDto;
+import com.github.abrarshakhi.mmap.data.dto.MessMemberDto;
 import com.github.abrarshakhi.mmap.domain.model.MonthYear;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -23,6 +25,89 @@ public class HomeDataSource extends AuthDataSource {
     public HomeDataSource(Context context) {
         super(context);
     }
+
+    public void findUserByEmail(
+        String email,
+        OnSuccessListener<String> success, // returns userId
+        OnFailureListener failure
+    ) {
+        db.collection("users")
+            .whereEqualTo("email", email)
+            .limit(1)
+            .get(com.google.firebase.firestore.Source.CACHE)
+            .addOnSuccessListener(snap -> {
+                if (!snap.isEmpty()) {
+                    success.onSuccess(snap.getDocuments().get(0).getId());
+                } else {
+                    db.collection("users")
+                        .whereEqualTo("email", email)
+                        .limit(1)
+                        .get(com.google.firebase.firestore.Source.SERVER)
+                        .addOnSuccessListener(serverSnap -> {
+                            if (!serverSnap.isEmpty()) {
+                                success.onSuccess(
+                                    serverSnap.getDocuments().get(0).getId()
+                                );
+                            } else {
+                                failure.onFailure(
+                                    new Exception("User does not exist")
+                                );
+                            }
+                        })
+                        .addOnFailureListener(failure);
+                }
+            })
+            .addOnFailureListener(failure);
+    }
+
+
+    public ListenerRegistration addOrUpdateMemberOffline(
+        String messId,
+        MessMemberDto newMember,
+        OnSuccessListener<String> localSuccess,
+        OnSuccessListener<String> serverSuccess,
+        OnFailureListener failure
+    ) {
+        DocumentReference messRef = db.collection("mess").document(messId);
+
+        return messRef.addSnapshotListener((snap, e) -> {
+            if (e != null || snap == null || !snap.exists()) return;
+
+            MessDto mess = snap.toObject(MessDto.class);
+            if (mess == null) return;
+
+            boolean found = false;
+
+            for (MessMemberDto m : mess.members) {
+                if (m.userId.equals(newMember.userId)) {
+                    found = true;
+
+                    if (!m.role.equals(MessMemberRole.LEFT)) {
+                        failure.onFailure(
+                            new IllegalStateException("User already active in mess")
+                        );
+                        return;
+                    }
+                    m.role = MessMemberRole.DEFAULT;
+                }
+            }
+
+            if (!found) {
+                mess.members.add(newMember);
+                mess.memberIds.add(newMember.userId);
+            }
+
+            messRef.set(mess)
+                .addOnFailureListener(failure);
+
+            if (snap.getMetadata().hasPendingWrites()) {
+                localSuccess.onSuccess("Saved locally (offline)");
+            } else {
+                serverSuccess.onSuccess("Synced with server");
+            }
+        });
+    }
+
 
     /* ---------- PREFS ---------- */
 
@@ -136,7 +221,6 @@ public class HomeDataSource extends AuthDataSource {
     }
 
 
-
     public void getGroceries(
         String messId,
         int month,
@@ -168,17 +252,17 @@ public class HomeDataSource extends AuthDataSource {
     }
 
     public ListenerRegistration listenGroceriesRealtime(
-            String messId,
-            int month,
-            int year,
-            OnSuccessListener<List<GroceryBatchDto>> success,
-            OnFailureListener failure
+        String messId,
+        int month,
+        int year,
+        OnSuccessListener<List<GroceryBatchDto>> success,
+        OnFailureListener failure
     ) {
         Query query = db.collection("mess")
-                .document(messId)
-                .collection("grocery_batches")
-                .whereEqualTo("month", month)
-                .whereEqualTo("year", year);
+            .document(messId)
+            .collection("grocery_batches")
+            .whereEqualTo("month", month)
+            .whereEqualTo("year", year);
 
         return query.addSnapshotListener((snap, e) -> {
             if (e != null) {

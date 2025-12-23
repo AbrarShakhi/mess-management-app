@@ -16,12 +16,12 @@ import com.github.abrarshakhi.mmap.data.dto.AddedItemDto;
 
 import java.util.List;
 
-public class addedGroceriesItemAdapter extends ArrayAdapter<AddedItemDto> {
+public class AddedGroceriesItemAdapter extends ArrayAdapter<AddedItemDto> {
 
     private final Context context;
     private final List<AddedItemDto> items;
 
-    public addedGroceriesItemAdapter(@NonNull Context context,@NonNull List<AddedItemDto> items) {
+    public AddedGroceriesItemAdapter(@NonNull Context context, @NonNull List<AddedItemDto> items) {
         super(context, R.layout.added_groceries_item, items);
         this.context = context;
         this.items = items;

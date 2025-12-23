@@ -5,14 +5,18 @@ public class MessMemberDto {
     public String role;
     public String messId;
     public long joinedAt;
+    public float houseRent;
+    public float utility;
 
     public MessMemberDto() {
     }
 
-    public MessMemberDto(String userId, String messId, String role, long joinedAt) {
+    public MessMemberDto(String userId, String messId, String role, long joinedAt, float houseRent, float utility) {
         this.userId = userId;
         this.messId = messId;
         this.role = role;
         this.joinedAt = joinedAt;
+        this.houseRent= houseRent;
+        this.utility= utility;
     }
 }

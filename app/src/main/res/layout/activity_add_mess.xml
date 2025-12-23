@@ -107,6 +107,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:backgroundTint="#2962FF"
             android:text="Cancel" />
 
         <Button
@@ -115,6 +116,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_weight="1"
+            android:backgroundTint="#2962FF"
             android:text="Create" />
     </LinearLayout>
 

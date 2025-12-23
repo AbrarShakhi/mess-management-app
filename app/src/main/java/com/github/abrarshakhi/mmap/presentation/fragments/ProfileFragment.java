@@ -98,4 +98,11 @@ public class ProfileFragment extends Fragment {
         startActivity(new Intent(requireActivity(), LoginActivity.class));
         requireActivity().finishAffinity();
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        homeDataSource = null;
+        binding = null;
+    }
 }

@@ -90,13 +90,13 @@ public class GroceryItemAdapter extends ArrayAdapter<GroceryBatch> {
             builder.append(item.itemName)
                 .append(" - ")
                 .append(item.quantity)
-                .append(" - ৳")
+                .append(" - " + "BDT")
                 .append(item.price)
                 .append("\n");
         }
 
         new AlertDialog.Builder(context)
-            .setTitle("Grocery Details")
+            .setTitle("Items")
             .setMessage(builder.toString())
             .setPositiveButton("OK", null)
             .show();

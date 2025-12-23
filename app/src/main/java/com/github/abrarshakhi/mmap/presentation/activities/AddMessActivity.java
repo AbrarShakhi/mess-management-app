@@ -79,7 +79,9 @@ public class AddMessActivity extends AppCompatActivity {
             userId,
             null,
             MessMemberRole.ADMIN,
-            System.currentTimeMillis()
+            System.currentTimeMillis(),
+            0,
+            0
         );
 
         // Add member to the list
