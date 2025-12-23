@@ -64,27 +64,6 @@ public class GroceryFragment extends Fragment {
         adapter = new GroceryItemAdapter(requireContext(), list);
         binding.lvGroceryItem.setAdapter(adapter);
         fetchMonthYearThenLoad();
-
-        binding.btnAddGrocery.setOnClickListener(v -> {
-                if (monthYear != null) {
-                    startActivity(
-                        new Intent(requireActivity(), GroceryManageActivity.class)
-                            .putExtra("M", monthYear.getMonth())
-                            .putExtra("Y", monthYear.getYear())
-                    );
-                }
-            }
-        );
-
-        binding.ivArrowLeft.setOnClickListener(v -> {
-            monthYear = monthYear.previous();
-            loadGroceriesRealtime();
-        });
-
-        binding.ivArrowRight.setOnClickListener(v -> {
-            monthYear = monthYear.next();
-            loadGroceriesRealtime();
-        });
     }
 
     private void loadGroceriesRealtime() {
@@ -110,6 +89,26 @@ public class GroceryFragment extends Fragment {
         dataSource.getCurrentMonthYearFromMess(
             messId,
             my -> {
+                binding.btnAddGrocery.setOnClickListener(v -> {
+                        if (monthYear != null) {
+                            startActivity(
+                                new Intent(requireActivity(), GroceryManageActivity.class)
+                                    .putExtra("M", monthYear.getMonth())
+                                    .putExtra("Y", monthYear.getYear())
+                            );
+                        }
+                    }
+                );
+
+                binding.ivArrowLeft.setOnClickListener(v -> {
+                    monthYear = monthYear.previous();
+                    loadGroceriesRealtime();
+                });
+
+                binding.ivArrowRight.setOnClickListener(v -> {
+                    monthYear = monthYear.next();
+                    loadGroceriesRealtime();
+                });
                 monthYear = my;
                 binding.tvMonthYear.setText(monthYear.toString());
                 prepareCaches();

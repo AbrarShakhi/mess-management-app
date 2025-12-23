@@ -15,6 +15,9 @@
         android:theme="@style/Base.Theme.MessManagementApp"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".presentation.activities.AddMealsActivity"
+            android:exported="false" />
+        <activity
             android:name=".presentation.activities.AddPaymentActivity"
             android:exported="false" />
         <activity

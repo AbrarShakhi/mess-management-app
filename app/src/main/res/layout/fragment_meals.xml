@@ -1,26 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mealTracking"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5"
     android:orientation="vertical"
     android:padding="12dp"
-    tools:context=".presentation.fragments.MealsFragment">
+    tools:context=".presentation.fragments.MealsFragment"
+    tools:ignore="HardCodedText">
 
-    <!-- ========= MONTH NAVIGATION ========= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/ivArrowLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
             android:src="@drawable/ic_arrow_left" />
 
         <TextView
@@ -29,132 +28,35 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="September 2025"
-            android:textSize="18sp"
+            android:text=""
             android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/ivArrowRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
             android:src="@drawable/ic_arrow_right" />
+
     </LinearLayout>
 
-    <!-- ========= MAIN CONTENT ========= -->
-    <LinearLayout
+    <ListView
+        android:id="@+id/lvCalender"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@android:color/white"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_weight="1" />
 
-        <!-- ========= TOTAL MEALS ========= -->
-        <LinearLayout
-            android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <Button
+            android:id="@+id/btnAddMeal"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="32dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total Meals"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvTotalMeals"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:text="45"
-                android:textColor="#2E7D32"
-                android:textSize="52sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginVertical="12dp"
-            android:background="#DDDDDD" />
-
-        <!-- ========= WEEK DAYS ========= -->
-        <GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="7"
-            android:layout_marginBottom="8dp">
-
-            <TextView style="@style/WeekDay" android:text="Sun"/>
-            <TextView style="@style/WeekDay" android:text="Mon"/>
-            <TextView style="@style/WeekDay" android:text="Tue"/>
-            <TextView style="@style/WeekDay" android:text="Wed"/>
-            <TextView style="@style/WeekDay" android:text="Thu"/>
-            <TextView style="@style/WeekDay" android:text="Fri"/>
-            <TextView style="@style/WeekDay" android:text="Sat"/>
-        </GridLayout>
-
-        <!-- ========= CALENDAR GRID ========= -->
-        <GridLayout
-            android:id="@+id/gridCalendar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="7">
-
-            <!-- ========= 35 CALENDAR CELLS ========= -->
-
-            <!-- ROW 1 -->
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-
-            <!-- ROW 2 -->
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-
-            <!-- ROW 3 -->
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-
-            <!-- ROW 4 -->
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-
-            <!-- ROW 5 -->
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-            <include layout="@layout/item_calendar_cell"/>
-
-        </GridLayout>
-
+            android:layout_weight="1"
+            android:backgroundTint="#2962FF"
+            android:text="Create entry" />
     </LinearLayout>
-
 </LinearLayout>

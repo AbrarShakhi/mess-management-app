@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/bg_card"
+    android:layout_margin="8dp"
+    tools:ignore="HardcodedText">
+
+    <!-- Header -->
+    <TextView
+        android:id="@+id/tvDayMeal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Day 12 - LUNCH"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"/>
+
+    <TextView
+        android:id="@+id/tvTotalMeal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total: 5 meals"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="4dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD"
+        android:layout_marginVertical="8dp"/>
+
+    <!-- Members meal list -->
+    <LinearLayout
+        android:id="@+id/containerMembers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/>
+
+</LinearLayout>
