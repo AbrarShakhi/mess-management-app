@@ -62,7 +62,7 @@ public class HomeActivity extends AppCompatActivity {
     private void checkUserMess() {
         String currentMessId = homeDataSource.getCurrentMessId();
 
-        if (currentMessId != null && !currentMessId.isEmpty()) {
+        if (currentMessId != null && !currentMessId.isBlank()) {
             homeDataSource.getMess(currentMessId, messDto -> {
                 if (messDto != null) {
                     navigation.navigate();
@@ -86,6 +86,7 @@ public class HomeActivity extends AppCompatActivity {
             for (var messDto : result) {
                 for (var member : messDto.members) {
                     if (member.userId.equals(loggedInUserId) && !member.role.equals(MessMemberRole.LEFT)) {
+                        homeDataSource.saveCurrentMessId(messDto.messId);
                         navigation.navigate();
                         return;
                     }

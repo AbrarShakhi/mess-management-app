@@ -13,22 +13,19 @@ import androidx.fragment.app.Fragment;
 
 import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.data.datasourse.HomeDataSource;
-import com.github.abrarshakhi.mmap.data.dto.MessMemberDto;
 import com.github.abrarshakhi.mmap.databinding.FragmentManagementBinding;
-import com.github.abrarshakhi.mmap.domain.model.MessMember;
 import com.github.abrarshakhi.mmap.presentation.activities.AddMemberActivity;
 import com.github.abrarshakhi.mmap.presentation.activities.MemberInfoActivity;
 import com.github.abrarshakhi.mmap.presentation.adapters.MemberListAdapter;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ManagementFragment extends Fragment {
     private FragmentManagementBinding binding;
     private HomeDataSource ds;
     private MemberListAdapter memberListAdapter;
+    private ListenerRegistration memberListener;
 
     public ManagementFragment() {
     }
@@ -57,10 +54,13 @@ public class ManagementFragment extends Fragment {
         });
         binding.lvMemberList.setAdapter(memberListAdapter);
         binding.btnAddMember.setVisibility(View.GONE);
-        loadMessMembers(ds.getCurrentMessId(), ds,
+        memberListener = ds.listenMessMembersRealtime(
+            ds.getCurrentMessId(),
             members -> {
                 memberListAdapter.clear();
                 memberListAdapter.addAll(members);
+
+                // Set listener for logged-in user
                 for (var mem : members) {
                     if (mem.userId.equals(ds.getLoggedInUser().getUid())) {
                         memberListAdapter.setListener(messMember -> {
@@ -69,19 +69,14 @@ public class ManagementFragment extends Fragment {
                             b.putString("ROLE", mem.role);
                             startActivity(new Intent(requireContext(), MemberInfoActivity.class).putExtras(b));
                         });
-                        if (mem.role.equals(MessMemberRole.ADMIN)) {
-                            binding.btnAddMember.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.btnAddMember.setVisibility(View.GONE);
-                        }
+
+                        binding.btnAddMember.setVisibility(mem.role.equals(MessMemberRole.ADMIN) ? View.VISIBLE : View.GONE);
                         break;
                     }
                 }
                 memberListAdapter.notifyDataSetChanged();
             },
-            e -> {
-                Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+            e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
         );
 
         binding.btnAddMember.setOnClickListener(v -> {
@@ -89,54 +84,10 @@ public class ManagementFragment extends Fragment {
         });
     }
 
-    private void loadMessMembers(
-        String messId,
-        @NonNull HomeDataSource dataSource,
-        OnSuccessListener<List<MessMember>> success,
-        OnFailureListener failure
-    ) {
-        dataSource.getMess(
-            messId,
-            mess -> {
-                if (mess.members == null || mess.members.isEmpty()) {
-                    success.onSuccess(new ArrayList<>());
-                    return;
-                }
-
-                List<MessMember> result = new ArrayList<>();
-                int total = mess.members.size();
-
-                for (MessMemberDto memberDto : mess.members) {
-                    dataSource.fetchUserProfile(
-                        memberDto.userId,
-                        userDto -> {
-                            String fullName = userDto != null
-                                ? userDto.fullName
-                                : "Unknown";
-
-                            MessMember member = new MessMember(
-                                memberDto.userId,
-                                memberDto.messId,
-                                memberDto.role,
-                                memberDto.joinedAt,
-                                memberDto.houseRent,
-                                memberDto.utility,
-                                fullName
-                            );
-
-                            result.add(member);
-
-                            // When all users loaded
-                            if (result.size() == total) {
-                                success.onSuccess(result);
-                            }
-                        },
-                        failure
-                    );
-                }
-            },
-            failure
-        );
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (memberListener != null) memberListener.remove();
+        binding = null;
     }
-
 }

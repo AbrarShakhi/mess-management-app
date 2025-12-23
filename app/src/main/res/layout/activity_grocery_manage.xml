@@ -27,7 +27,8 @@
         android:layout_marginHorizontal="16dp"
         android:hint="Item name"
         android:maxLength="16"
-        android:inputType="text" />
+        android:inputType="text"
+        android:background="@android:drawable/edit_text"  />
 
     <!-- Price -->
     <EditText
@@ -36,7 +37,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:hint="Price"
-        android:inputType="numberDecimal" />
+        android:inputType="numberDecimal"
+        android:background="@android:drawable/edit_text" />
 
     <!-- Quantity / Measurement -->
     <EditText
@@ -46,7 +48,8 @@
         android:layout_marginHorizontal="16dp"
         android:hint="Quantity / Measurement"
         android:maxLength="8"
-        android:inputType="text" />
+        android:inputType="text"
+        android:background="@android:drawable/edit_text" />
 
     <!-- OK Button -->
     <Button

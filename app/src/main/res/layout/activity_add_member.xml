@@ -19,7 +19,8 @@
         android:hint="Enter Email Address"
         android:inputType="textEmailAddress"
         android:padding="12dp"
-        android:textColor="#333333" />
+        android:textColor="#333333"
+        android:background="@android:drawable/edit_text" />
 
     <Button
         android:id="@+id/btnAddMember"

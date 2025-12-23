@@ -7,8 +7,11 @@ import androidx.annotation.NonNull;
 import com.github.abrarshakhi.mmap.core.constants.MessMemberRole;
 import com.github.abrarshakhi.mmap.core.utils.Outcome;
 import com.github.abrarshakhi.mmap.data.dto.GroceryBatchDto;
+import com.github.abrarshakhi.mmap.data.dto.MealTrackingDto;
 import com.github.abrarshakhi.mmap.data.dto.MessDto;
 import com.github.abrarshakhi.mmap.data.dto.MessMemberDto;
+import com.github.abrarshakhi.mmap.data.dto.PaymentDto;
+import com.github.abrarshakhi.mmap.domain.model.MessMember;
 import com.github.abrarshakhi.mmap.domain.model.MonthYear;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -61,6 +64,100 @@ public class HomeDataSource extends AuthDataSource {
     }
 
 
+    public ListenerRegistration listenMessMembersRealtime(
+        @NonNull String messId,
+        @NonNull OnSuccessListener<List<MessMember>> success,
+        @NonNull OnFailureListener failure) {
+        DocumentReference messRef = db.collection("mess").document(messId);
+
+        return messRef.addSnapshotListener((snap, e) -> {
+            if (e != null || snap == null || !snap.exists()) {
+                failure.onFailure(e != null ? e : new Exception("Mess not found"));
+                return;
+            }
+
+            MessDto mess = snap.toObject(MessDto.class);
+            if (mess == null || mess.members == null) {
+                success.onSuccess(new ArrayList<>());
+                return;
+            }
+
+            List<MessMember> members = new ArrayList<>();
+            int total = mess.members.size();
+
+            if (total == 0) {
+                success.onSuccess(members);
+                return;
+            }
+
+            for (MessMemberDto memberDto : mess.members) {
+                fetchUserProfile(memberDto.userId, userDto -> {
+                    String fullName = userDto != null ? userDto.fullName : "Unknown";
+
+                    MessMember member = new MessMember(
+                        memberDto.userId,
+                        memberDto.messId,
+                        memberDto.role,
+                        memberDto.joinedAt,
+                        memberDto.houseRent,
+                        memberDto.utility,
+                        fullName
+                    );
+
+                    members.add(member);
+
+                    if (members.size() == total) {
+                        success.onSuccess(members);
+                    }
+                }, failure);
+            }
+        });
+    }
+
+    public void editMemberOfflineCapable(
+        String messId,
+        MessMemberDto updatedMember,
+        OnSuccessListener<String> success,
+        OnFailureListener failure
+    ) {
+        DocumentReference messRef = db.collection("mess").document(messId);
+
+        // Use default fetch (offline first)
+        messRef.get().addOnSuccessListener(snap -> {
+            if (!snap.exists()) {
+                failure.onFailure(new IllegalStateException("Mess does not exist"));
+                return;
+            }
+
+            MessDto mess = snap.toObject(MessDto.class);
+            if (mess == null || mess.members == null) {
+                failure.onFailure(new IllegalStateException("Mess data corrupted"));
+                return;
+            }
+
+            boolean found = false;
+            for (int i = 0; i < mess.members.size(); i++) {
+                MessMemberDto m = mess.members.get(i);
+                if (m.userId.equals(updatedMember.userId)) {
+                    mess.members.set(i, updatedMember); // Update member
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                failure.onFailure(new IllegalStateException("Member not found in mess"));
+                return;
+            }
+
+            // Set the updated mess (offline first, syncs automatically)
+            messRef.set(mess)
+                .addOnSuccessListener(v -> success.onSuccess("Member updated successfully"))
+                .addOnFailureListener(failure);
+
+        }).addOnFailureListener(failure);
+    }
+
     public ListenerRegistration addOrUpdateMemberOffline(
         String messId,
         MessMemberDto newMember,
@@ -108,9 +205,7 @@ public class HomeDataSource extends AuthDataSource {
         });
     }
 
-
     /* ---------- PREFS ---------- */
-
     public void saveCurrentMessId(String messId) {
         sp.edit().putString("CURR_MESS", messId).apply();
     }
@@ -124,7 +219,6 @@ public class HomeDataSource extends AuthDataSource {
     }
 
     /* ---------- MESS ---------- */
-
     public void createMess(
         @NonNull MessDto dto,
         OnSuccessListener<MessDto> success,
@@ -165,7 +259,6 @@ public class HomeDataSource extends AuthDataSource {
     }
 
     /* ---------- GROCERIES ---------- */
-
     public void addGrocery(
         @NonNull GroceryBatchDto dto,
         OnSuccessListener<GroceryBatchDto> success,
@@ -353,6 +446,180 @@ public class HomeDataSource extends AuthDataSource {
             .delete()
             .addOnSuccessListener(success)
             .addOnFailureListener(failure);
+    }
+
+    public ListenerRegistration addPaymentOfflineFirst(
+        @NonNull PaymentDto dto,
+        @NonNull OnSuccessListener<PaymentDto> localSuccess,
+        @NonNull OnSuccessListener<PaymentDto> serverSuccess,
+        @NonNull OnFailureListener failure
+    ) {
+        DocumentReference ref = db.collection("mess")
+            .document(dto.messId)
+            .collection("payments")
+            .document();
+
+        dto.paymentId = ref.getId();
+        dto.timestamp = System.currentTimeMillis();
+
+        ref.set(dto).addOnFailureListener(failure);
+
+        return ref.addSnapshotListener((snap, e) -> {
+            if (e != null || snap == null) return;
+
+            if (snap.getMetadata().hasPendingWrites()) {
+                localSuccess.onSuccess(dto);
+            } else {
+                serverSuccess.onSuccess(dto);
+            }
+        });
+    }
+
+    public void getPayments(
+        @NonNull String messId,
+        int month,
+        int year,
+        @NonNull OnSuccessListener<List<PaymentDto>> success,
+        @NonNull OnFailureListener failure
+    ) {
+        Query query = db.collection("mess")
+            .document(messId)
+            .collection("payments")
+            .whereEqualTo("month", month)
+            .whereEqualTo("year", year);
+
+        query.get(Source.CACHE)
+            .addOnSuccessListener(snap -> {
+                List<PaymentDto> list = new ArrayList<>();
+                snap.forEach(d -> list.add(d.toObject(PaymentDto.class)));
+                success.onSuccess(list);
+            })
+            .addOnFailureListener(e ->
+                query.get(Source.SERVER)
+                    .addOnSuccessListener(snap -> {
+                        List<PaymentDto> list = new ArrayList<>();
+                        snap.forEach(d -> list.add(d.toObject(PaymentDto.class)));
+                        success.onSuccess(list);
+                    })
+                    .addOnFailureListener(failure)
+            );
+    }
+
+    public ListenerRegistration listenMealsRealtime(
+        @NonNull String messId,
+        int month,
+        int year,
+        @NonNull OnSuccessListener<List<MealTrackingDto>> success,
+        @NonNull OnFailureListener failure
+    ) {
+        Query query = db.collection("mess")
+            .document(messId)
+            .collection("meal_tracking")
+            .whereEqualTo("month", month)
+            .whereEqualTo("year", year);
+
+        return query.addSnapshotListener((snap, e) -> {
+            if (e != null) {
+                failure.onFailure(e);
+                return;
+            }
+
+            if (snap != null) {
+                List<MealTrackingDto> list = new ArrayList<>();
+                snap.forEach(d -> list.add(d.toObject(MealTrackingDto.class)));
+                success.onSuccess(list);
+            }
+        });
+    }
+
+    public void getMeals(
+        @NonNull String messId,
+        int month,
+        int year,
+        @NonNull OnSuccessListener<List<MealTrackingDto>> success,
+        @NonNull OnFailureListener failure
+    ) {
+        Query query = db.collection("mess")
+            .document(messId)
+            .collection("meal_tracking")
+            .whereEqualTo("month", month)
+            .whereEqualTo("year", year);
+
+        query.get(Source.CACHE)
+            .addOnSuccessListener(snap -> {
+                List<MealTrackingDto> list = new ArrayList<>();
+                snap.forEach(d -> list.add(d.toObject(MealTrackingDto.class)));
+                success.onSuccess(list);
+            })
+            .addOnFailureListener(e ->
+                query.get(Source.SERVER)
+                    .addOnSuccessListener(snap -> {
+                        List<MealTrackingDto> list = new ArrayList<>();
+                        snap.forEach(d -> list.add(d.toObject(MealTrackingDto.class)));
+                        success.onSuccess(list);
+                    })
+                    .addOnFailureListener(failure)
+            );
+    }
+
+
+    public ListenerRegistration addMealOfflineFirst(
+        @NonNull MealTrackingDto dto,
+        @NonNull OnSuccessListener<MealTrackingDto> localSuccess,
+        @NonNull OnSuccessListener<MealTrackingDto> serverSuccess,
+        @NonNull OnFailureListener failure
+    ) {
+        DocumentReference ref = db.collection("mess")
+            .document(dto.messId)
+            .collection("meal_tracking")
+            .document();
+
+        dto.mealId = ref.getId();
+        dto.timestamp = System.currentTimeMillis();
+
+        // Offline-capable write
+        ref.set(dto).addOnFailureListener(failure);
+
+        // Listen for local + server state
+        return ref.addSnapshotListener((snap, e) -> {
+            if (e != null || snap == null) return;
+
+            if (snap.getMetadata().hasPendingWrites()) {
+                // ✅ local / offline
+                localSuccess.onSuccess(dto);
+            } else {
+                // ✅ synced with server
+                serverSuccess.onSuccess(dto);
+            }
+        });
+    }
+
+
+    public ListenerRegistration listenPaymentsRealtime(
+        @NonNull String messId,
+        int month,
+        int year,
+        @NonNull OnSuccessListener<List<PaymentDto>> success,
+        @NonNull OnFailureListener failure
+    ) {
+        Query query = db.collection("mess")
+            .document(messId)
+            .collection("payments")
+            .whereEqualTo("month", month)
+            .whereEqualTo("year", year);
+
+        return query.addSnapshotListener((snap, e) -> {
+            if (e != null) {
+                failure.onFailure(e);
+                return;
+            }
+
+            if (snap != null) {
+                List<PaymentDto> list = new ArrayList<>();
+                snap.forEach(d -> list.add(d.toObject(PaymentDto.class)));
+                success.onSuccess(list);
+            }
+        });
     }
 
 }

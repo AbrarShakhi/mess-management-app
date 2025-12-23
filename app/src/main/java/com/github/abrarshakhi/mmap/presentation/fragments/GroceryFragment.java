@@ -60,6 +60,7 @@ public class GroceryFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         adapter = new GroceryItemAdapter(requireContext(), list);
         binding.lvGroceryItem.setAdapter(adapter);
         fetchMonthYearThenLoad();

@@ -40,7 +40,8 @@
             android:layout_height="wrap_content"
             android:hint="Enter mess name"
             android:inputType="textPersonName"
-            android:padding="10dp" />
+            android:padding="10dp"
+            android:background="@android:drawable/edit_text" />
 
         <!-- Location -->
         <TextView
@@ -58,7 +59,8 @@
             android:layout_height="wrap_content"
             android:hint="Enter location"
             android:inputType="text"
-            android:padding="10dp" />
+            android:padding="10dp"
+            android:background="@android:drawable/edit_text"  />
 
         <!-- City -->
         <TextView
@@ -76,7 +78,8 @@
             android:layout_height="wrap_content"
             android:hint="Enter city"
             android:inputType="text"
-            android:padding="10dp" />
+            android:padding="10dp"
+            android:background="@android:drawable/edit_text" />
 
         <!-- Currency -->
         <TextView
@@ -91,7 +94,8 @@
         <Spinner
             android:id="@+id/spCurrency"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/edit_text" />
 
     </LinearLayout>
 

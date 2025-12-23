@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/editMember"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="24dp"
+            android:text="Edit Member"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spRole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp" />
+
+        <EditText
+            android:id="@+id/etHouseRent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text"
+            android:hint="House Rent"
+            android:inputType="numberDecimal"
+            android:padding="12dp" />
+
+        <EditText
+            android:id="@+id/etUtility"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text"
+            android:hint="Utility"
+            android:inputType="numberDecimal"
+            android:padding="12dp" />
+
+        <Button
+            android:id="@+id/btnSaveMember"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#2962FF"
+            android:text="Save Changes" />
+
+        <Button
+            android:id="@+id/btnRemoveMember"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/button_red_bg"
+            android:text="Remove from Member" />
+    </LinearLayout>
+</ScrollView>

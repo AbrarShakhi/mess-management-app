@@ -63,9 +63,8 @@ public class AddMemberActivity extends AppCompatActivity {
                         msg -> runOnUiThread(() ->
                             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                         ),
-                        msg -> runOnUiThread(() ->
-                            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                        ),
+                        msg -> {
+                        },
                         e -> runOnUiThread(() ->
                             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show()
                         )
