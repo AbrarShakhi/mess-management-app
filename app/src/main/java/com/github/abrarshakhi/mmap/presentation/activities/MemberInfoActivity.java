@@ -123,7 +123,7 @@ public class MemberInfoActivity extends AppCompatActivity {
                     memberPayments.add(p);
                 }
             }
-
+            memberPayments.sort((p1, p2) -> Long.compare(p2.timestamp, p1.timestamp));
             // Update the adapter
             paymentHistoryAdapter.clear();
             paymentHistoryAdapter.addAll(memberPayments);

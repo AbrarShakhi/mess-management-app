@@ -55,28 +55,28 @@ public class ManagementFragment extends Fragment {
         binding.lvMemberList.setAdapter(memberListAdapter);
         binding.btnAddMember.setVisibility(View.GONE);
         memberListener = ds.listenMessMembersRealtime(
-            ds.getCurrentMessId(),
-            members -> {
-                memberListAdapter.clear();
-                memberListAdapter.addAll(members);
+                ds.getCurrentMessId(),
+                members -> {
+                    memberListAdapter.clear();
+                    memberListAdapter.addAll(members);
 
-                // Set listener for logged-in user
-                for (var mem : members) {
-                    if (mem.userId.equals(ds.getLoggedInUser().getUid())) {
-                        memberListAdapter.setListener(messMember -> {
-                            var b = new Bundle();
-                            b.putSerializable("MEM", messMember);
-                            b.putString("ROLE", mem.role);
-                            startActivity(new Intent(requireContext(), MemberInfoActivity.class).putExtras(b));
-                        });
+                    // Set listener for logged-in user
+                    for (var mem : members) {
+                        if (mem.userId.equals(ds.getLoggedInUser().getUid())) {
+                            memberListAdapter.setListener(messMember -> {
+                                var b = new Bundle();
+                                b.putSerializable("MEM", messMember);
+                                b.putString("ROLE", mem.role);
+                                startActivity(new Intent(requireContext(), MemberInfoActivity.class).putExtras(b));
+                            });
 
-                        binding.btnAddMember.setVisibility(mem.role.equals(MessMemberRole.ADMIN) ? View.VISIBLE : View.GONE);
-                        break;
+                            binding.btnAddMember.setVisibility(mem.role.equals(MessMemberRole.ADMIN) ? View.VISIBLE : View.GONE);
+                            break;
+                        }
                     }
-                }
-                memberListAdapter.notifyDataSetChanged();
-            },
-            e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
+                    memberListAdapter.notifyDataSetChanged();
+                },
+                e -> Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show()
         );
 
         binding.btnAddMember.setOnClickListener(v -> {
@@ -86,8 +86,8 @@ public class ManagementFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
         if (memberListener != null) memberListener.remove();
         binding = null;
+        super.onDestroyView();
     }
 }

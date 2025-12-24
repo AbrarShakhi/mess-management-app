@@ -110,25 +110,26 @@ public class AddPaymentActivity extends AppCompatActivity {
         String note = etNote.getText().toString().trim();
 
         PaymentDto payment = new PaymentDto(
-            null,
-            dataSource.getCurrentMessId(),
-            member.userId,
-            amount,
-            monthIndex,
-            year,
-            type,
-            note,
-            System.currentTimeMillis()
+                null,
+                dataSource.getCurrentMessId(),
+                member.userId,
+                amount,
+                monthIndex,
+                year,
+                type,
+                note,
+                System.currentTimeMillis()
         );
 
         // Save offline-first using HomeDataSource
         dataSource.addPaymentOfflineFirst(payment,
-            localPayment -> {
-                Toast.makeText(this, "Payment saved locally: " + localPayment.amount, Toast.LENGTH_SHORT).show();
-                finish();
-            },
-            serverPayment -> Toast.makeText(this, "Payment synced with server: " + serverPayment.amount, Toast.LENGTH_SHORT).show(),
-            error -> Toast.makeText(this, "Failed to save payment: " + error.getMessage(), Toast.LENGTH_SHORT).show()
+                localPayment -> {
+                    Toast.makeText(this, "Payment saved locally: " + localPayment.amount, Toast.LENGTH_SHORT).show();
+                    finish();
+                },
+                serverPayment -> {
+                },
+                error -> Toast.makeText(this, "Failed to save payment: " + error.getMessage(), Toast.LENGTH_SHORT).show()
         );
     }
 

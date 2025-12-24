@@ -4,53 +4,64 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.github.abrarshakhi.mmap.data.datasourse.HomeDataSource;
-import com.github.abrarshakhi.mmap.data.dto.GroceryBatchDto;
-import com.github.abrarshakhi.mmap.data.dto.MealTrackingDto;
+import com.github.abrarshakhi.mmap.data.dto.MessMemberDto;
 import com.github.abrarshakhi.mmap.data.dto.PaymentDto;
 import com.github.abrarshakhi.mmap.databinding.FragmentHomeBinding;
+import com.github.abrarshakhi.mmap.presentation.adapters.PaymentHistoryAdapter;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.ListenerRegistration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
     private HomeDataSource dataSource;
-    private String currentUserId;
-    private String messId;
-    private int month, year;
-    // Variables to store intermediate results
-    private float totalGrocery = 0;
-    private float userGrocery = 0;
-    private int totalMealCount = 0;
-    private int userMealCount = 0;
-    private float totalPaymentsByUser = 0;
 
-    public HomeFragment() {
-    }
+    private PaymentHistoryAdapter paymentAdapter;
+    private ListenerRegistration paymentListener;
+
+    private String messId;
+    private String userId;
+    private int currentMonth;
+    private int currentYear;
+
+    private float totalGroceryCost = 0f;
+    private int totalMeals = 0;
+    private int myMeals = 0;
+
+    private float paidRent = 0f;
+    private float paidUtility = 0f;
+    private float paidMeal = 0f;
+
+    private float mealRate = 0f;
+    private MessMemberDto myMember;
 
     public static HomeFragment newInstance() {
         return new HomeFragment();
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dataSource = new HomeDataSource(requireContext());
-
-        FirebaseUser user = dataSource.getLoggedInUser();
-        if (user != null) currentUserId = user.getUid();
-
-        messId = dataSource.getCurrentMessId();
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -59,93 +70,246 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (messId == null || messId.isEmpty()) return;
+        FirebaseUser user = dataSource.getLoggedInUser();
+        if (user == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        loadAllStats();
+        userId = user.getUid();
+        messId = dataSource.getCurrentMessId();
+
+        if (messId == null || messId.isEmpty()) {
+            Toast.makeText(requireContext(), "No active mess", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        fetchCurrentMonthYear();
     }
 
-    private void loadAllStats() {
-        // 1️⃣ Fetch mess info
-        dataSource.getMess(messId, mess -> {
-            month = mess.month;
-            year = mess.year;
+    private void setupPaymentList() {
+        paymentAdapter = new PaymentHistoryAdapter(
+                requireContext(),
+                new ArrayList<>(),
+                payment -> {
+                    String msg =
+                            "Type: " + payment.type +
+                                    "\nAmount: BDT " + payment.amount +
+                                    "\nMonth/Year: " + payment.month + "/" + payment.year +
+                                    (payment.note != null && !payment.note.isEmpty()
+                                            ? "\nNote: " + payment.note
+                                            : "");
 
-            // Fetch groceries, meals, and payments in parallel
-            fetchGroceries();
-            fetchMeals();
-            fetchPayments();
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("Payment Details")
+                            .setMessage(msg)
+                            .setPositiveButton("OK", null)
+                            .show();
+                }
+        );
 
-        }, e -> {
-            // Handle error
-        });
+        binding.lvPayments.setAdapter(paymentAdapter);
     }
 
-    private void fetchGroceries() {
-        dataSource.getGroceries(messId, month, year, groceries -> {
-            totalGrocery = 0;
-            userGrocery = 0;
-
-            for (GroceryBatchDto batch : groceries) {
-                if (batch.items != null) {
-                    for (var item : batch.items) {
-                        totalGrocery += item.price;
-                        if (batch.userId.equals(currentUserId)) {
-                            userGrocery += item.price;
+    private void fetchMyMessMember() {
+        dataSource.listenMessMembersRealtime(
+                messId,
+                members -> {
+                    for (var m : members) {
+                        if (m.userId.equals(userId)) {
+                            myMember = new MessMemberDto(
+                                    m.userId,
+                                    m.messId,
+                                    m.role,
+                                    m.joinedAt,
+                                    m.houseRent,
+                                    m.utility
+                            );
+                            loadPayments();
+                            setupPaymentList();
+                            fetchGroceries();
+                            fetchMeals();
+                            listenPaymentsRealtime();
+                            break;
                         }
                     }
-                }
-            }
-
-            binding.tvTotalGrocery.setText("Total Grocery: " + totalGrocery);
-            binding.tvUserGrocery.setText("Your Grocery: " + userGrocery);
-            updateMealRateAndDue();
-
-        }, e -> {
-            binding.tvTotalGrocery.setText("Total Grocery: 0");
-            binding.tvUserGrocery.setText("Your Grocery: 0");
-        });
+                },
+                e -> Toast.makeText(requireContext(), "Failed to load member info", Toast.LENGTH_SHORT).show()
+        );
     }
+
+    private void updateRentUtilityUI() {
+        if (myMember == null) return;
+
+        calculateDues();
+    }
+
+
+    private void calculateMealRate() {
+        if (totalMeals == 0) {
+            mealRate = 0;
+        } else {
+            mealRate = totalGroceryCost / totalMeals;
+        }
+
+        binding.tvMealRate.setText("Meal Rate: " + mealRate);
+        calculateDues();
+    }
+
 
     private void fetchMeals() {
-        dataSource.getMeals(messId, month, year, meals -> {
-            totalMealCount = 0;
-            userMealCount = 0;
+        dataSource.getMeals(
+                messId,
+                currentMonth,
+                currentYear,
+                meals -> {
+                    totalMeals = 0;
+                    myMeals = 0;
 
-            for (MealTrackingDto meal : meals) {
-                totalMealCount += meal.mealCount;
-                if (meal.userId.equals(currentUserId)) userMealCount += meal.mealCount;
-            }
+                    for (var m : meals) {
+                        totalMeals += m.mealCount;
+                        if (m.userId.equals(userId)) {
+                            myMeals += m.mealCount;
+                        }
+                    }
 
-            binding.tvTotalMeal.setText("Total Meals: " + totalMealCount);
-            binding.tvUserMeal.setText("Your Meals: " + userMealCount);
-            updateMealRateAndDue();
+                    binding.tvTotalMeal.setText("Total Meals: " + totalMeals);
+                    binding.tvUserMeal.setText("Your Meals: " + myMeals);
 
-        }, e -> {
-            binding.tvTotalMeal.setText("Total Meals: 0");
-            binding.tvUserMeal.setText("Your Meals: 0");
-            binding.tvMealRate.setText("Meal Rate: 0");
-        });
+                    calculateMealRate();
+                },
+                e -> Toast.makeText(requireContext(), "Failed to load meals", Toast.LENGTH_SHORT).show()
+        );
     }
 
-    private void fetchPayments() {
-        dataSource.getPayments(messId, month, year, payments -> {
-            totalPaymentsByUser = 0;
-            for (PaymentDto p : payments) {
-                if (p.userId.equals(currentUserId)) totalPaymentsByUser += p.amount;
-            }
-            updateMealRateAndDue();
 
-        }, e -> binding.tvUserDue.setText("Your Due: 0"));
+    private void fetchGroceries() {
+        dataSource.getGroceries(
+                messId,
+                currentMonth,
+                currentYear,
+                groceries -> {
+                    float myGrocery = 0f;
+
+                    for (var batch : groceries) {
+                        if (batch.items != null) {
+                            for (var item : batch.items) {
+                                totalGroceryCost += item.price;
+                                if (userId.equals(batch.userId)) {
+                                    myGrocery += item.price;
+                                }
+                            }
+                        }
+                    }
+                    binding.tvUserGrocery.setText("Your Grocery: " + myGrocery);
+                    binding.tvTotalGrocery.setText("Total Grocery: " + totalGroceryCost);
+                    calculateMealRate();
+                },
+                e -> Toast.makeText(requireContext(), "Failed to load groceries", Toast.LENGTH_SHORT).show()
+        );
     }
 
-    private void updateMealRateAndDue() {
-        // Only calculate if meals and groceries have been loaded
-        if (totalMealCount == 0) return;
 
-        float mealRate = totalMealCount > 0 ? totalGrocery / totalMealCount : 0;
-        float due = (userMealCount * mealRate) - totalPaymentsByUser;
+    private void fetchCurrentMonthYear() {
+        dataSource.getCurrentMonthYearFromMess(
+                messId,
+                monthYear -> {
+                    currentMonth = monthYear.getMonth();
+                    currentYear = monthYear.getYear();
+                    fetchMyMessMember();
+                },
+                e -> Toast.makeText(
+                        requireContext(),
+                        "Failed to load month/year",
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
 
-        binding.tvMealRate.setText("Meal Rate: " + String.format("%.2f", mealRate));
-        binding.tvUserDue.setText("Your Due: " + String.format("%.2f", due));
+    private void loadPayments() {
+        dataSource.getPayments(
+                messId,
+                currentMonth,
+                currentYear,
+                this::updatePaymentList,
+                e -> Toast.makeText(
+                        requireContext(),
+                        "Failed to load payments",
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
+
+    private void listenPaymentsRealtime() {
+        paymentListener = dataSource.listenPaymentsRealtime(
+                messId,
+                currentMonth,
+                currentYear,
+                this::updatePaymentList,
+                e -> Toast.makeText(
+                        requireContext(),
+                        "Realtime payment error",
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
+
+    private void updatePaymentList(List<PaymentDto> allPayments) {
+
+        List<PaymentDto> myPayments = new ArrayList<>();
+
+        paidRent = 0f;
+        paidUtility = 0f;
+        paidMeal = 0f;
+
+        for (PaymentDto p : allPayments) {
+            if (p.userId.equals(userId)) {
+                myPayments.add(p);
+
+                switch (p.type) {
+                    case "RENT":
+                        paidRent += p.amount;
+                        break;
+                    case "UTILITY":
+                        paidUtility += p.amount;
+                        break;
+                    case "MEAL":
+                    case "GROCERY":
+                        paidMeal += p.amount;
+                        break;
+                }
+            }
+        }
+
+        myPayments.sort((a, b) -> Long.compare(b.timestamp, a.timestamp));
+
+        paymentAdapter.clear();
+        paymentAdapter.addAll(myPayments);
+        paymentAdapter.notifyDataSetChanged();
+
+        calculateDues();
+        updateRentUtilityUI();
+    }
+
+    private void calculateDues() {
+        if (myMember == null) return;
+
+        float rentDue = myMember.houseRent - paidRent;
+        float utilityDue = myMember.utility - paidUtility;
+        float mealDue = (myMeals * mealRate) - paidMeal;
+
+        binding.tvRentDue.setText("Rent Due: " + rentDue);
+        binding.tvUtilityDue.setText("Utility Due: " + utilityDue);
+        binding.tvMealDue.setText("Meal Due: " + mealDue);
+    }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (paymentListener != null) {
+            paymentListener.remove();
+        }
+        binding = null;
     }
 }
